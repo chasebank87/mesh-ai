@@ -1,0 +1,425 @@
+:root {
+  --mesh-primary: #3c4297;
+  --mesh-secondary: #81a0ed;
+  --mesh-tertiary: #694daa;
+  --mesh-quaternary: #cd99e2;
+  --mesh-background: var(--background-secondary);
+  --mesh-border: var(--background-modifier-border);
+}
+
+.mesh-view-container {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mesh-form-container {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  width: 100%;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.mesh-card {
+  border: none;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: visible;
+  background-color: var(--background-secondary);
+}
+
+.mesh-card::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(to right, var(--mesh-primary), var(--mesh-quaternary));
+  border-radius: 12px 12px 0 0;
+}
+
+.mesh-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.mesh-card-title {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-normal);
+  text-align: center;
+  text-transform: lowercase;
+  letter-spacing: 1px;
+}
+
+.mesh-card:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 30px;
+  background: linear-gradient(to bottom, var(--mesh-secondary), var(--mesh-tertiary));
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mesh-provider-select,
+.mesh-input-source-select,
+.mesh-tavily-input,
+.mesh-output-filename-input,
+.mesh-pattern-select {
+  width: 100%;
+  height: 45px;
+  padding: 0 15px;
+  font-size: 14px;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  appearance: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mesh-provider-select:focus,
+.mesh-input-source-select:focus,
+.mesh-tavily-input:focus,
+.mesh-output-filename-input:focus,
+.mesh-pattern-select:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.2);
+  outline: none;
+}
+
+.mesh-tavily-input{
+  margin-top: 20px;
+}
+
+.mesh-submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background: var(--interactive-accent-hover);
+}
+
+.pattern-search-container {
+  position: relative;
+}
+
+.pattern-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  display: none;
+}
+
+.pattern-results:not(:empty) {
+  display: block;
+}
+
+.pattern-result {
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pattern-result:hover {
+  background-color: var(--background-secondary);
+}
+
+.selected-patterns-container {
+  margin-top: 12px;
+  margin-bottom: 20px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 10px;
+  background-color: var(--background-primary);
+}
+
+.mesh-loading {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+#particles-js {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#particles-js canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mesh-selected-patterns-title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-normal);
+  margin-top: 20px;
+  text-transform: lowercase;
+}
+
+.pattern-stitching-container {
+  position: absolute;
+  bottom: 5px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--interactive-accent);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 20px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.pattern-stitching-label {
+  margin-left: 10px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-transform: lowercase;
+}
+
+.mesh-card.patterns {
+  position: relative;
+  padding-bottom: 40px; /* Ensure space for the toggle */
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 5px 0 rgba(var(--interactive-accent-rgb), 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px 0 rgba(var(--interactive-accent-rgb), 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px 0 rgba(var(--interactive-accent-rgb), 0.5);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mesh-card.processing {
+  opacity: 0.7;
+  animation: pulse-glow 2s infinite;
+}
+
+.mesh-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  border: none;
+  border-radius: 12px;
+}
+
+.mesh-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--background-secondary);
+  border-top: 5px solid var(--interactive-accent);
+  border-radius: 50%;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes card-rotate {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.mesh-card {
+  transition: all 0.5s ease;
+  transform-style: preserve-3d;
+}
+
+.mesh-card.rotating {
+  animation: card-rotate 2s ease-in-out;
+}
+
+
+.mesh-submit-button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-on-accent);
+  background: linear-gradient(to right, var(--mesh-primary), var(--mesh-quaternary));
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@keyframes rotate-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  25% {
+    background-position: 25% 50%;
+  }
+
+  50% {
+    background-position: 50% 50%;
+  }
+
+  75% {
+    background-position: 75% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.mesh-submit-button-container {
+  position: relative;
+  display: inline-block;
+  padding: 3px; /* This creates space for the border */
+  border-radius: 5px; /* Matches the button's border radius */
+  width: 100%;
+}
+
+.mesh-submit-button-container.processing {
+  background: linear-gradient(90deg, var(--mesh-quaternary), var(--mesh-primary), var(--mesh-quaternary), var(--mesh-primary));
+  background-size: 400% 400%;
+  animation: rotate-gradient 3s ease infinite;
+}
+
+.mesh-submit-button {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(to right, var(--mesh-primary), var(--mesh-quaternary));
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px; /* Slightly smaller than the container */
+  cursor: pointer;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mesh-submit-button-container.processing .mesh-submit-button {
+  background-color: var(--background-primary); /* Ensure button background stays solid */
+}
+
+.mesh-submit-button {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.mesh-submit-button.processing::after {
+  content: 'processing...';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-primary);
+}
