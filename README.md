@@ -1,6 +1,6 @@
 # Mesh AI
 
-### Fabric Alernative
+### Fabric Alternative
 
 This plugin integrates various AI providers into Obsidian, allowing for AI-generated content and interactions directly within your notes. 
 
@@ -14,7 +14,7 @@ If you like this plugin, feel free to support the development by buying a coffee
 ## Table of Contents
 
 - [Mesh AI](#mesh-ai)
-    - [Fabric Alernative](#fabric-alernative)
+    - [Fabric Alternative](#fabric-alternative)
   - [Table of Contents](#table-of-contents)
   - [Description](#description)
   - [Installation](#installation)
