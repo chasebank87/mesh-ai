@@ -58,12 +58,12 @@ export class MeshView extends ItemView {
     const tavilySearchInput = inputCard.createEl('input', { 
       type: 'text', 
       placeholder: 'Enter Tavily search query',
-      cls: 'mesh-tavily-input'
+      cls: 'mesh-tavily-input hidden'
     });
-    tavilySearchInput.style.display = 'none';
+    tavilySearchInput.addClass('hidden');
 
     inputSourceSelect.addEventListener('change', () => {
-      tavilySearchInput.style.display = inputSourceSelect.value === 'tavily' ? 'block' : 'none';
+      tavilySearchInput.toggleClass('hidden', inputSourceSelect.value !== 'tavily');
     });
 
     // Patterns card (combining search and selected patterns)
@@ -144,7 +144,7 @@ export class MeshView extends ItemView {
 
   private handleClickOutside = (event: MouseEvent) => {
     if (!(event.target instanceof Node) || !this.patternResults.contains(event.target)) {
-      this.patternResults.style.display = 'none';
+      this.patternResults.addClass('hidden');
     }
   }
   
@@ -209,11 +209,11 @@ export class MeshView extends ItemView {
     }
   }
   
-  private debounce(func: Function, wait: number) {
-    let timeout: NodeJS.Timeout;
-    return (...args: any[]) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(this, args), wait);
+  private debounce<T extends (...args: never[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+    let timeout: NodeJS.Timeout | null = null;
+    return (...args: Parameters<T>) => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
     };
   }
   
@@ -230,36 +230,36 @@ export class MeshView extends ItemView {
   }
 
   async onSubmit() {
-    debugLog(this.plugin,"onSubmit method called");
+    debugLog(this.plugin, "onSubmit method called");
     const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
     const inputSourceSelect = this.containerEl.querySelector('.mesh-input-source-select') as HTMLSelectElement;
     const tavilySearchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
-    
-    debugLog(this.plugin,"Selected provider:", providerSelect.value);
-    debugLog(this.plugin,"Selected input source:", inputSourceSelect.value);
-    debugLog(this.plugin,"Tavily search input:", tavilySearchInput.value);
+  
+    debugLog(this.plugin, "Selected provider:", providerSelect.value);
+    debugLog(this.plugin, "Selected input source:", inputSourceSelect.value);
+    debugLog(this.plugin, "Tavily search input:", tavilySearchInput.value);
   
     const selectedProvider = providerSelect.value as ProviderName;
     const selectedSource = inputSourceSelect.value;
     const selectedPatterns = this.selectedPatterns;
   
     try {
-      debugLog(this.plugin,"Getting input content...");
+      debugLog(this.plugin, "Getting input content...");
       const input = await getInputContent(this.app, this.plugin, selectedSource, tavilySearchInput);
       this.showLoading();
-      debugLog(this.plugin,"Processing patterns...");
+  
+      debugLog(this.plugin, "Processing patterns...");
       if (this.patternStitchingEnabled) {
         const processedContent = await processStitchedPatterns(this.plugin, selectedProvider, selectedPatterns, input);
-        debugLog(this.plugin,"Creating output file...");
+        debugLog(this.plugin, "Creating output file...");
         await createOutputFile(this.plugin, processedContent, this.outputFileNameInput);
-        return;
       } else {
         const processedContent = await processPatterns(this.plugin, selectedProvider, selectedPatterns, input);
-        debugLog(this.plugin,"Creating output file...");
+        debugLog(this.plugin, "Creating output file...");
         await createOutputFile(this.plugin, processedContent, this.outputFileNameInput);
       }
     } catch (error) {
-      console.error('Error processing request:', error);
+      debugLog(this.plugin, 'Error processing request:', error);
       new Notice(`Error: ${error.message}`);
     } finally {
       this.hideLoading();

@@ -1,13 +1,14 @@
 import { Notice } from 'obsidian';
 import { OllamaAPIHelper } from '../utils/OllamaAPIHelper';
 import MeshAIPlugin from '../main';
+import { debugLog } from '../utils/MeshUtils';
 
 export class OllamaProvider {
   private apiHelper: OllamaAPIHelper;
   private plugin: MeshAIPlugin;
 
   constructor(serverUrl: string, plugin: MeshAIPlugin) {
-    this.apiHelper = new OllamaAPIHelper(serverUrl);
+    this.apiHelper = new OllamaAPIHelper(serverUrl, this.plugin);
     this.plugin = plugin;
   }
 
@@ -20,7 +21,7 @@ export class OllamaProvider {
         throw new Error('Unexpected response format from Ollama API');
       }
     } catch (error) {
-      console.error('Error fetching Ollama models:', error);
+      debugLog(this.plugin, `Error fetching Ollama models: ${error}`);
       throw new Error('Failed to fetch Ollama models. Please ensure the Ollama server is running and the URL is correct.');
     }
   }
@@ -51,7 +52,7 @@ export class OllamaProvider {
 
       return fullResponse;
     } catch (error) {
-      console.error(`Error generating response with model ${model}:`, error);
+      debugLog(this.plugin, `Error generating response with model ${model}: ${error}`);
       throw new Error(`Failed to generate response: ${error.message}`);
     }
   }

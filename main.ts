@@ -10,7 +10,8 @@ import { GrocqProvider } from './providers/GrocqProvider';
 import { OllamaProvider } from './providers/OllamaProvider';
 import { YoutubeProvider } from './providers/YoutubeProvider';
 import { TavilyProvider } from './providers/TavilyProvider';
-
+import { debugLog } from './utils/MeshUtils';
+import { GitHubApiItem } from './types';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
@@ -65,7 +66,7 @@ export default class MeshAIPlugin extends Plugin {
         await rightLeaf.setViewState({ type: MESH_VIEW_TYPE, active: true });
         leaf = rightLeaf;
       } else {
-        console.error('Failed to create a new leaf for Mesh AI view');
+        debugLog(this, 'Failed to create a new leaf for Mesh AI view');
         return;
       }
     }
@@ -123,7 +124,8 @@ export default class MeshAIPlugin extends Plugin {
   
       // Fetch the list of folders in the patterns directory
       const response = await requestUrl({ url: apiUrl });
-      const folders = response.json.filter((item: any) => item.type === 'dir');
+      const items = response.json as GitHubApiItem[];
+      const folders = items.filter((item) => item.type === 'dir');
   
       let successCount = 0;
       let failCount = 0;
@@ -143,19 +145,19 @@ export default class MeshAIPlugin extends Plugin {
           if (existingFile instanceof TFile) {
             // If file exists, update its content
             await this.app.vault.modify(existingFile, fileContent.text);
-            console.log(`Updated existing file: ${fileName}`);
+            debugLog(this, `Updated existing file: ${fileName}`);
           } else {
             // If file doesn't exist, create it
             await this.app.vault.create(filePath, fileContent.text);
-            console.log(`Created new file: ${fileName}`);
+            debugLog(this, `Created new file: ${fileName}`);
           }
           
           successCount++;
         } catch (error) {
-          console.error(`Error processing ${folder.name}:`, error);
+          debugLog(this, `Error processing ${folder.name}:`, error);
           if (error instanceof Error) {
-            console.error(`Error message: ${error.message}`);
-            console.error(`Error stack: ${error.stack}`);
+            debugLog(this, `Error message: ${error.message}`);
+            debugLog(this, `Error stack: ${error.stack}`);
           }
           failCount++;
         }
@@ -164,7 +166,7 @@ export default class MeshAIPlugin extends Plugin {
       new Notice(`Successfully downloaded/updated ${successCount} patterns. ${failCount} failed.`);
       await this.loadAllPatterns();
     } catch (error) {
-      console.error('Error in downloadPatternsFromGitHub:', error);
+      debugLog(this, 'Error in downloadPatternsFromGitHub:', error);
       new Notice(`Failed to download patterns: ${error.message}`);
     }
   }
@@ -174,7 +176,7 @@ export default class MeshAIPlugin extends Plugin {
     if (fabricPatternsFolder instanceof TFolder) {
       for (const file of fabricPatternsFolder.children) {
         if (file instanceof TFile) {
-          await this.app.vault.delete(file);
+          await this.app.fileManager.trashFile(file);
         }
       }
     } else {

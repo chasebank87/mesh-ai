@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting, DropdownComponent, ButtonComponent, Notice } from 'obsidian';
 import { PluginSettings, ProviderName } from '../types';
 import MeshAIPlugin from '../main';
+import { debugLog } from '../utils/MeshUtils';
 
 export class SettingsView extends PluginSettingTab {
   plugin: MeshAIPlugin;
@@ -124,15 +125,32 @@ export class SettingsView extends PluginSettingTab {
             await this.plugin.saveSettings();
           }));
     
-        new Setting(containerEl)
-          .setName('Download Patterns')
-          .setDesc('Download patterns from GitHub')
-          .addButton(btn => btn
-            .setButtonText('Download')
-            .onClick(async () => {
+      new Setting(containerEl)
+      .setName('Download Patterns')
+      .setDesc('Download patterns from GitHub')
+      .addButton((btn: ButtonComponent) => {
+        btn.setButtonText('Download')
+          .onClick(async () => {
+            const originalButtonText = btn.buttonEl.textContent || 'Download';
+            btn.setDisabled(true);
+            btn.buttonEl.addClass('loading');
+            btn.setButtonText('Downloading...');
+            
+            try {
               await this.plugin.downloadPatternsFromGitHub();
+              new Notice('Patterns downloaded successfully');
+            } catch (error) {
+              console.error('Error downloading patterns:', error);
+              new Notice(`Failed to download patterns: ${error instanceof Error ? error.message : String(error)}`);
+            } finally {
+              btn.setDisabled(false);
+              btn.buttonEl.removeClass('loading');
+              btn.setButtonText(originalButtonText);
               this.display(); // Refresh the settings view
-          }));
+            }
+          });
+      });
+
 
     new Setting(containerEl)
       .setName('Mesh output folder')
@@ -169,7 +187,7 @@ export class SettingsView extends PluginSettingTab {
         models = this.plugin.settings.providerModels[provider] || await this.getModelsForProvider(provider);
       }
       
-      dropdown.selectEl.innerHTML = '';
+      dropdown.selectEl.empty();
       if (models && models.length > 0) {
         models.forEach(model => dropdown.addOption(model, model));
         
@@ -186,10 +204,10 @@ export class SettingsView extends PluginSettingTab {
           });
       } else {
         dropdown.addOption('', 'No models available');
-        console.warn(`No models available for ${provider}`);
+        debugLog(this.plugin, `No models available for ${provider}`);
       }
     } catch (error) {
-      console.error(`Error fetching models for ${provider}:`, error);
+      debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
       dropdown.addOption('error', 'Error fetching models');
     } finally {
       dropdown.selectEl.disabled = false;
@@ -203,7 +221,7 @@ export class SettingsView extends PluginSettingTab {
         return await providerInstance.getAvailableModels();
       }
     } catch (error) {
-      console.error(`Error fetching models for ${provider}:`, error);
+      debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
     }
     return this.plugin.settings.providerModels[provider] || [];
   }

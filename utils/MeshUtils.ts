@@ -7,7 +7,6 @@ import { getPatternContent } from './PatternUtils';
 import { handleLLMRequest } from './LLMUtils';
 import { FULL_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 
-
 export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSource: string, tavilySearchInput: HTMLInputElement): Promise<string> {
   const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:\S+)/g;
   let input = '';
@@ -18,9 +17,9 @@ export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSo
       input = selectedSource === 'active-note' ? await getActiveNoteContent(app) : await navigator.clipboard.readText();
       const youtubeMatches = Array.from(input.match(youtubeRegex) || []);
       if (youtubeMatches && youtubeMatches.length > 0) {
-        input = await new Promise((resolve) => {
+        input = await new Promise<string>((resolve) => {
           new YouTubeSelectionModal(app, plugin, youtubeMatches, 
-            (transcript) => {
+            (transcript: string) => {
               resolve(`YouTube Transcript:\n\n${transcript}\n\nOriginal Content:\n\n${input}`);
             },
             () => {
@@ -43,7 +42,7 @@ export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSo
   return input;
 }
 
-export function debugLog(plugin: MeshAIPlugin, ...args: any[]) {
+export function debugLog(plugin: MeshAIPlugin, ...args: unknown[]): void {
   if (plugin.settings.enableDebugging) {
     console.log(...args);
   }
@@ -58,8 +57,8 @@ export async function processPatterns(plugin: MeshAIPlugin, selectedProvider: Pr
       .replace('{patternContents}', patternContent)
       .replace('{input}', currentContent);
 
-    debugLog(plugin,`Applying pattern: ${pattern}`);
-    debugLog(plugin,'Full prompt being sent to LLM:', fullPrompt);
+    debugLog(plugin, `Applying pattern: ${pattern}`);
+    debugLog(plugin, 'Full prompt being sent to LLM:', fullPrompt);
 
     const response = await handleLLMRequest(plugin, selectedProvider, fullPrompt);
     currentContent = response; // Use the response as input for the next pattern

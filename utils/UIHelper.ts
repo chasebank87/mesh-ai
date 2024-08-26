@@ -18,13 +18,13 @@ export class UIHelper {
   createUI(settings: PluginSettings, handleLLMRequest: (provider: ProviderName, prompt: string) => Promise<void>) {
     this.containerEl.empty();
     this.containerEl.addClass('mesh-ai-container');
-
+  
     const header = this.containerEl.createEl('h2', { text: 'Mesh AI' });
-
+  
     const providerSelect = this.createProviderSelect(settings);
     const promptInput = this.createPromptInput();
     const submitButton = this.createSubmitButton();
-
+  
     submitButton.addEventListener('click', () => {
       const selectedProvider = providerSelect.value as ProviderName;
       const prompt = promptInput.value;
@@ -32,18 +32,24 @@ export class UIHelper {
         handleLLMRequest(selectedProvider, prompt);
       }
     });
-
+  
     const responseContainer = this.containerEl.createEl('div', { cls: 'mesh-ai-response' });
-
+  
     return {
       updateResponse: (response: string) => {
-        responseContainer.innerHTML = `<pre>${response}</pre>`;
+        responseContainer.empty();
+        const pre = responseContainer.createEl('pre');
+        pre.setText(response);
       },
       showLoading: () => {
-        responseContainer.innerHTML = '<div class="mesh-ai-loading">Processing...</div>';
+        responseContainer.empty();
+        responseContainer.createEl('div', { 
+          text: 'Processing...',
+          cls: 'mesh-ai-loading'
+        });
       },
       hideLoading: () => {
-        responseContainer.innerHTML = '';
+        responseContainer.empty();
       }
     };
   }

@@ -1,6 +1,7 @@
 import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { Notice } from 'obsidian';
+import { debugLog } from '../utils/MeshUtils';
 
 export class GoogleProvider {
   private apiHelper: CloudAPIHelper;
@@ -9,7 +10,7 @@ export class GoogleProvider {
   constructor(apiKey: string, plugin: MeshAIPlugin) {
     this.apiHelper = new CloudAPIHelper('https://generativelanguage.googleapis.com/v1beta', {
       'x-goog-api-key': apiKey
-    });
+    }, this.plugin);
     this.plugin = plugin;
   }
 
@@ -24,7 +25,7 @@ export class GoogleProvider {
         throw new Error('Unexpected response format from Google API');
       }
     } catch (error) {
-      console.error('Error fetching Google models:', error);
+      debugLog(this.plugin, `Error fetching Google models: ${error}`);
       throw error;
     }
   }
@@ -61,7 +62,7 @@ export class GoogleProvider {
 
       return fullResponse;
     } catch (error) {
-      console.error(`Error generating response with model ${model}:`, error);
+      debugLog(this.plugin, `Error generating response with model ${model}: ${error}`);
       throw new Error(`Failed to generate response: ${error.message}`);
     }
   }

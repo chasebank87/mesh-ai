@@ -1,6 +1,15 @@
 import { BaseAPIHelper } from './BaseAPIHelper';
+import { debugLog } from './MeshUtils';
+import MeshAIPlugin from '../main';
 
 export class CloudAPIHelper extends BaseAPIHelper {
+  private plugin: MeshAIPlugin;
+
+  constructor(baseUrl: string, headers: Record<string, string>, plugin: MeshAIPlugin) {
+    super(baseUrl, headers);
+    this.plugin = plugin;
+  }
+
   async get(endpoint: string): Promise<any> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
@@ -62,7 +71,7 @@ export class CloudAPIHelper extends BaseAPIHelper {
                 const parsedData = JSON.parse(jsonData);
                 onChunk(parsedData);
               } catch (error) {
-                console.error('Error parsing JSON:', error);
+                debugLog(this.plugin, `Error parsing JSON: ${error}`);
               }
             }
           }

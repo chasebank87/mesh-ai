@@ -1,5 +1,6 @@
 import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
+import { debugLog } from '../utils/MeshUtils';
 
 export class TavilyProvider {
   private apiHelper: CloudAPIHelper;
@@ -9,7 +10,7 @@ export class TavilyProvider {
   constructor(apiKey: string, plugin: MeshAIPlugin) {
     this.apiHelper = new CloudAPIHelper('https://api.tavily.com', {
       'Content-Type': 'application/json'
-    });
+    }, this.plugin);
     this.plugin = plugin;
     this.apiKey = apiKey;
   }
@@ -17,7 +18,7 @@ export class TavilyProvider {
   async search(query: string): Promise<string> {
     try {
       const response = await this.apiHelper.post('/search', {
-        api_key: this.apiKey, // Include the API key in the request body
+        api_key: this.apiKey,
         query: query,
         search_depth: 'advanced',
         include_answer: true,
@@ -32,10 +33,10 @@ export class TavilyProvider {
         throw new Error('No results found in Tavily response');
       }
     } catch (error) {
-      console.error('Error fetching results from Tavily:', error);
+      debugLog(this.plugin, `Error fetching results from Tavily: ${error}`);
       if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
+        debugLog(this.plugin, `Response status: ${error.response.status}`);
+        debugLog(this.plugin, `Response data: ${JSON.stringify(error.response.data)}`);
       }
       throw new Error(`Failed to fetch results from Tavily: ${error.message}`);
     }

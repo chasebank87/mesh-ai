@@ -1,7 +1,7 @@
 import { Notice } from 'obsidian';
 import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
-
+import { debugLog } from '../utils/MeshUtils';
 
 export class OpenAIProvider {
   private apiHelper: CloudAPIHelper;
@@ -11,7 +11,7 @@ export class OpenAIProvider {
     this.apiHelper = new CloudAPIHelper('https://api.openai.com/v1', {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
-    });
+    }, this.plugin);
     this.plugin = plugin;
   }
 
@@ -19,7 +19,7 @@ export class OpenAIProvider {
     const openAIModels = this.plugin.settings.providerModels.openai;
     const model = openAIModels && openAIModels.length > 0 ? openAIModels[0] : 'gpt-3.5-turbo';
 
-    console.log('Using OpenAI model:', model);
+    debugLog(this.plugin, `Using OpenAI model: ${model}`);
 
     if (!model) {
       throw new Error('No OpenAI model has been selected. Please choose a model in the settings.');
@@ -61,10 +61,10 @@ export class OpenAIProvider {
         }
       }
     } catch (error) {
-      console.error(`Error generating response with model ${model}:`, error);
+      debugLog(this.plugin, `Error generating response with model ${model}: ${error}`);
       if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
+        debugLog(this.plugin, `Response status: ${error.response.status}`);
+        debugLog(this.plugin, `Response data: ${JSON.stringify(error.response.data)}`);
       }
       throw new Error(`Failed to generate response: ${error.message}`);
     }
@@ -81,7 +81,7 @@ export class OpenAIProvider {
         throw new Error('Unexpected response format from OpenAI API');
       }
     } catch (error) {
-      console.error('Error fetching OpenAI models:', error);
+      debugLog(this.plugin, `Error fetching OpenAI models: ${error}`);
       throw error;
     }
   }

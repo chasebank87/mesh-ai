@@ -1,22 +1,25 @@
 import { TFile, TFolder } from 'obsidian';
 import MeshAIPlugin from '../main';
 import * as Fuzzysort from 'fuzzysort';
+import { debugLog } from '../utils/MeshUtils';
+import { OptgroupAttributes, AttributeMap } from '../types';
 
 export async function updatePatternList(plugin: MeshAIPlugin, patternSelect: HTMLSelectElement) {
   const customPatterns = await plugin.loadCustomPatterns();
   const fabricPatterns = await plugin.loadFabricPatterns();
   const allPatterns = [...customPatterns, ...fabricPatterns];
 
-  patternSelect.innerHTML = '';
+  // Clear the select element
+  patternSelect.empty();
   
   if (allPatterns.length === 0) {
     patternSelect.createEl('option', { value: '', text: 'No patterns found' });
   } else {
     // Add an option group for custom patterns
     if (customPatterns.length > 0) {
-      const customGroup = patternSelect.createEl('optgroup', { 
+      const customGroup = patternSelect.createEl('optgroup', {
         attr: { label: 'Custom Patterns' }
-      } as any);
+      } as DomElementInfo);
       customPatterns.forEach(pattern => {
         customGroup.createEl('option', { value: pattern, text: pattern });
       });
@@ -24,9 +27,9 @@ export async function updatePatternList(plugin: MeshAIPlugin, patternSelect: HTM
 
     // Add an option group for Fabric patterns
     if (fabricPatterns.length > 0) {
-      const fabricGroup = patternSelect.createEl('optgroup', { 
+      const fabricGroup = patternSelect.createEl('optgroup', {
         attr: { label: 'Fabric Patterns' }
-      } as any);
+      } as DomElementInfo);
       fabricPatterns.forEach(pattern => {
         fabricGroup.createEl('option', { value: pattern, text: pattern });
       });
@@ -35,15 +38,15 @@ export async function updatePatternList(plugin: MeshAIPlugin, patternSelect: HTM
 }
 
 export async function getPatternContent(plugin: MeshAIPlugin, patternName: string): Promise<string> {
-  console.log(`Searching for pattern: ${patternName}`);
+  debugLog(plugin, `Searching for pattern: ${patternName}`);
 
   // Function to search for a file in a folder
   async function searchInFolder(folderPath: string): Promise<TFile | null> {
     const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
     if (folder instanceof TFolder) {
-      console.log(`Searching in folder: ${folderPath}`);
+      debugLog(plugin, `Searching in folder: ${folderPath}`);
       const files = folder.children.filter(file => file instanceof TFile);
-      console.log(`Files in folder: ${files.map(f => f.name).join(', ')}`);
+      debugLog(plugin, `Files in folder: ${files.map(f => f.name).join(', ')}`);
       
       // Try exact match first
       let patternFile = files.find(file => file.name === patternName);
@@ -58,12 +61,12 @@ export async function getPatternContent(plugin: MeshAIPlugin, patternName: strin
         patternFile = files.find(file => file.name.toLowerCase() === patternName.toLowerCase());
       }
 
-      if (patternFile) {
-        console.log(`Pattern found: ${patternFile.path}`);
-        return patternFile as TFile;
+      if (patternFile && patternFile instanceof TFile) {
+        debugLog(plugin, `Pattern found: ${patternFile.path}`);
+        return patternFile;
       }
     } else {
-      console.log(`Folder not found: ${folderPath}`);
+      debugLog(plugin, `Folder not found: ${folderPath}`);
     }
     return null;
   }
@@ -81,7 +84,7 @@ export async function getPatternContent(plugin: MeshAIPlugin, patternName: strin
   }
 
   // If pattern is not found in either folder
-  console.log(`Pattern '${patternName}' not found in custom or fabric patterns folders`);
+  debugLog(plugin, `Pattern '${patternName}' not found in custom or fabric patterns folders`);
   throw new Error(`Pattern '${patternName}' not found in custom or fabric patterns folders`);
 }
 
@@ -93,7 +96,7 @@ export async function searchPatterns(plugin: MeshAIPlugin, query: string, limit:
 export async function onPatternSearch(plugin: MeshAIPlugin, query: string, resultsContainer: HTMLElement, onSelect: (pattern: string) => void) {
   resultsContainer.empty();
   if (query.length === 0) {
-    resultsContainer.style.display = 'none';
+    resultsContainer.addClass('hidden');
     return;
   }
 
@@ -104,11 +107,12 @@ export async function onPatternSearch(plugin: MeshAIPlugin, query: string, resul
       const el = resultsContainer.createEl('div', { text: result.target, cls: 'pattern-result' });
       el.addEventListener('click', () => onSelect(result.target));
     });
-    resultsContainer.style.display = 'block';
+    resultsContainer.removeClass('hidden');
   } else {
-    resultsContainer.style.display = 'none';
+    resultsContainer.addClass('hidden');
   }
 }
+
 export function onPatternSelect(
   pattern: string, 
   selectedPatterns: string[], 

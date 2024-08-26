@@ -1,5 +1,6 @@
 import { ProviderName } from '../types';
 import MeshAIPlugin from '../main';
+import { debugLog } from '../utils/MeshUtils';
 
 export async function handleLLMRequest(plugin: MeshAIPlugin, provider: ProviderName, prompt: string): Promise<string> {
   try {
@@ -7,7 +8,7 @@ export async function handleLLMRequest(plugin: MeshAIPlugin, provider: ProviderN
     const response = await providerInstance.generateResponse(prompt);
     return response;
   } catch (error) {
-    console.error('LLM Request failed:', error);
+    debugLog(plugin, `LLM Request failed: ${error}`);
     throw new Error(`LLM Request failed: ${error.message}`);
   }
 }

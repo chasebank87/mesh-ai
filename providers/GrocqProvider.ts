@@ -1,6 +1,7 @@
 import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { Notice } from 'obsidian';
+import { debugLog } from '../utils/MeshUtils';
 
 interface GroqResponse {
   id: string;
@@ -33,7 +34,7 @@ export class GrocqProvider {
     this.apiHelper = new CloudAPIHelper('https://api.groq.com/openai/v1', {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
-    });
+    }, this.plugin);
     this.plugin = plugin;
   }
 
@@ -46,7 +47,7 @@ export class GrocqProvider {
         throw new Error('Unexpected response format from Groq API');
       }
     } catch (error) {
-      console.error('Error fetching Groq models:', error);
+      debugLog(this.plugin, `Error fetching Groq models: ${error}`);
       throw error;
     }
   }
@@ -75,7 +76,7 @@ export class GrocqProvider {
         throw new Error('No response content received from Groq API');
       }
     } catch (error) {
-      console.error(`Error generating response with model ${model}:`, error);
+      debugLog(this.plugin, `Error generating response with model ${model}: ${error}`);
       throw new Error(`Failed to generate response: ${error.message}`);
     }
   }

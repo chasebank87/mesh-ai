@@ -1,19 +1,28 @@
 import { BaseAPIHelper } from './BaseAPIHelper';
+import { debugLog } from '../utils/MeshUtils';
+import MeshAIPlugin from '../main'; 
+import { OllamaResponse, OllamaModelsResponse } from '../types';
 
 export class OllamaAPIHelper extends BaseAPIHelper {
-  async get(endpoint: string): Promise<any> {
+  private plugin: MeshAIPlugin;
+
+  constructor(baseUrl: string, plugin: MeshAIPlugin) {
+    super(baseUrl);
+    this.plugin = plugin;
+  }
+
+  async get(endpoint: string): Promise<OllamaModelsResponse> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
     });
-
+  
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
+  
     return response.json();
   }
-  
-  async post(endpoint: string, data: any) {
+  async post(endpoint: string, data: Record<string, unknown>): Promise<OllamaResponse> {
     const response = await this.fetchWithErrorHandling(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
       headers: {
@@ -25,7 +34,7 @@ export class OllamaAPIHelper extends BaseAPIHelper {
     return await response.json();
   }
 
-  async postStream(endpoint: string, data: any, onChunk: (chunk: any) => void) {
+  async postStream(endpoint: string, data: Record<string, unknown>, onChunk: (chunk: OllamaResponse) => void): Promise<void> {
     const response = await this.fetchWithErrorHandling(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
       headers: {
@@ -46,16 +55,16 @@ export class OllamaAPIHelper extends BaseAPIHelper {
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-          let newlineIndex;
+          let newlineIndex: number;
           while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
             const line = buffer.slice(0, newlineIndex);
             buffer = buffer.slice(newlineIndex + 1);
             if (line.trim()) {
               try {
-                const parsedData = JSON.parse(line);
+                const parsedData = JSON.parse(line) as OllamaResponse;
                 onChunk(parsedData);
               } catch (error) {
-                console.error('Error parsing JSON:', error);
+                debugLog(this.plugin, `Error parsing JSON: ${error instanceof Error ? error.message : String(error)}`);
               }
             }
           }

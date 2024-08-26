@@ -1,6 +1,7 @@
 import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { Notice } from 'obsidian';
+import { debugLog } from '../utils/MeshUtils';
 
 export class MicrosoftProvider {
   private apiHelper: CloudAPIHelper;
@@ -9,7 +10,7 @@ export class MicrosoftProvider {
   constructor(apiKey: string, plugin: MeshAIPlugin) {
     this.apiHelper = new CloudAPIHelper('https://api.cognitive.microsoft.com', {
       'api-key': apiKey
-    });
+    }, this.plugin);
     this.plugin = plugin;
   }
 
@@ -24,7 +25,7 @@ export class MicrosoftProvider {
         throw new Error('Unexpected response format from Microsoft API');
       }
     } catch (error) {
-      console.error('Error fetching Microsoft models:', error);
+      debugLog(this.plugin, `Error fetching Microsoft models: ${error}`);
       throw error;
     }
   }
@@ -55,7 +56,7 @@ export class MicrosoftProvider {
 
       return fullResponse;
     } catch (error) {
-      console.error(`Error generating response with model ${model}:`, error);
+      debugLog(this.plugin, `Error generating response with model ${model}: ${error}`);
       throw new Error(`Failed to generate response: ${error.message}`);
     }
   }

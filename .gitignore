@@ -65,3 +65,6 @@ coverage/
 
 # Obsidian plugin specific
 data.json
+
+# No non typescript files
+*.js

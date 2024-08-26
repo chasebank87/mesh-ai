@@ -423,3 +423,32 @@ input:checked + .slider:before {
   justify-content: center;
   background: var(--background-primary);
 }
+
+.hidden {
+  display: none;
+}
+
+.loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  width: 1em;
+  height: 1em;
+  top: 50%;
+  left: 100%;
+  margin-top: -0.5em;
+  margin-left: 0.5em;
+  border: 2px solid var(--interactive-accent);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

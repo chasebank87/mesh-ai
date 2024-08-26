@@ -1,16 +1,17 @@
 import { requestUrl } from 'obsidian';
 import MeshAIPlugin from '../main';
+import { debugLog } from '../utils/MeshUtils';
 
 export class YoutubeProvider {
   private plugin: MeshAIPlugin;
 
   constructor(plugin: MeshAIPlugin) {
-    console.log('Initializing YoutubeProvider');
     this.plugin = plugin;
+    debugLog(this.plugin, 'Initializing YoutubeProvider');
   }
 
   async getTranscript(url: string): Promise<string> {
-    console.log(`[getTranscript] Attempting to fetch transcript for URL: ${url}`);
+    debugLog(this.plugin, `[getTranscript] Attempting to fetch transcript for URL: ${url}`);
     try {
       const videoId = this.extractVideoId(url);
       if (!videoId) {
@@ -32,10 +33,10 @@ export class YoutubeProvider {
         fullTranscript += textTags[i].textContent + ' ';
       }
 
-      console.log(`[getTranscript] Transcript fetched successfully. Length: ${fullTranscript.length}`);
+      debugLog(this.plugin, `[getTranscript] Transcript fetched successfully. Length: ${fullTranscript.length}`);
       return fullTranscript.trim();
     } catch (error) {
-      console.error('[getTranscript] Error fetching YouTube transcript:', error);
+      debugLog(this.plugin, `[getTranscript] Error fetching YouTube transcript: ${error}`);
       throw error;
     }
   }

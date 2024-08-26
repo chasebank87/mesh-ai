@@ -1,12 +1,12 @@
-export type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama';
+type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama';
 
-export type ProviderApiKeys = {
+type ProviderApiKeys = {
   [K in Exclude<ProviderName, 'ollama'>]: string;
 } & {
   ollamaServerUrl: string;
 };
 
-export interface ProviderModels {
+interface ProviderModels {
   openai: string[];
   google: string[];
   microsoft: string[];
@@ -15,7 +15,7 @@ export interface ProviderModels {
   ollama: string[];
 }
 
-export interface PluginSettings {
+interface PluginSettings {
   openaiApiKey: string;
   googleApiKey: string;
   microsoftApiKey: string;
@@ -34,7 +34,7 @@ export interface PluginSettings {
   enableDebugging: boolean;
 }
 
-export const DEFAULT_SETTINGS: PluginSettings = {
+const DEFAULT_SETTINGS: PluginSettings = {
   openaiApiKey: '',
   googleApiKey: '',
   microsoftApiKey: '',
@@ -59,3 +59,72 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   patternStitchingEnabled: false,
   enableDebugging: false,
 };
+
+interface GitHubApiItem {
+  name: string;
+  type: 'file' | 'dir';
+  // Add other properties as needed
+}
+
+interface OptgroupAttributes {
+  label: string;
+}
+
+interface AttributeMap {
+  [key: string]: string | number | boolean | null;
+}
+
+interface OllamaResponse {
+  model: string;
+  created_at: string;
+  response: string;
+  done: boolean;
+  done_reason?: string;
+  context?: number[];
+  total_duration?: number;
+  load_duration?: number;
+  prompt_eval_count?: number;
+  prompt_eval_duration?: number;
+  eval_count?: number;
+  eval_duration?: number;
+}
+
+interface OllamaModelDetails {
+  parent_model: string;
+  format: string;
+  family: string;
+  families: string[];
+  parameter_size: string;
+  quantization_level: string;
+}
+
+interface OllamaModel {
+  name: string;
+  model: string;
+  modified_at: string;
+  size: number;
+  digest: string;
+  details: OllamaModelDetails;
+}
+
+interface OllamaModelsResponse {
+  models: OllamaModel[];
+}
+
+// At the bottom of the file, modify your exports:
+export type {
+  ProviderName,
+  ProviderApiKeys,
+  ProviderModels,
+  PluginSettings,
+  GitHubApiItem,
+  OptgroupAttributes,
+  AttributeMap,
+  OllamaResponse,
+  OllamaModelDetails,
+  OllamaModel,
+  OllamaModelsResponse,
+};
+
+// Export the DEFAULT_SETTINGS separately as it's a value, not a type
+export { DEFAULT_SETTINGS };
