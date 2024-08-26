@@ -7,7 +7,8 @@ import { searchPatterns, createSelectedPatternElement, getPatternContent, onPatt
 import { getActiveNoteContent, createOutputFile } from '../utils/FileUtils';
 import { FULL_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 import { UIHelper } from '../utils/UIHelper';
-import { getInputContent, processPatterns, processStitchedPatterns, debugLog} from '../utils/MeshUtils';
+import { getInputContent, processPatterns, processStitchedPatterns, debugLog } from '../utils/MeshUtils';
+import { logoSvg } from '../constants/logo'; // Adjust the import path as needed
 
 export const MESH_VIEW_TYPE = 'mesh-view';
 
@@ -46,6 +47,10 @@ export class MeshView extends ItemView {
     // Main form container
     const formContainer = container.createEl('div', { cls: 'mesh-form-container' });
 
+    // Add logo at the top
+    const logoElement = this.createLogoElement(logoSvg);
+    formContainer.appendChild(logoElement);
+
     // Provider selection card
     const providerCard = this.createCard(formContainer, 'provider');
     const providerSelect = UIHelper.createSelect(providerCard, 'mesh-provider-select', ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama']);
@@ -71,6 +76,7 @@ export class MeshView extends ItemView {
 
     // Pattern search container
     const patternSearchContainer = patternCard.createEl('div', { cls: 'pattern-search-container' });
+    
     this.patternInput = new TextComponent(patternSearchContainer)
       .setPlaceholder('Search patterns...')
       .onChange((query) => {
@@ -78,13 +84,16 @@ export class MeshView extends ItemView {
           onPatternSelect(
             pattern,
             this.selectedPatterns,
-            () => updateSelectedPatternsDisplay(
-              this.selectedPatternsContainer,
-              this.selectedPatterns,
-              (updatedPatterns) => {
-                this.selectedPatterns = updatedPatterns;
-              }
-            ),
+            () => {
+              updateSelectedPatternsDisplay(
+                this.selectedPatternsContainer,
+                this.selectedPatterns,
+                (updatedPatterns) => {
+                  this.selectedPatterns = updatedPatterns;
+                  this.updateSelectedPatternsVisibility();
+                }
+              );
+            },
             () => this.patternInput.setValue(''),
             () => this.patternResults.empty()
           );
@@ -92,10 +101,16 @@ export class MeshView extends ItemView {
       });
 
     this.patternResults = patternSearchContainer.createEl('div', { cls: 'pattern-results' });
+    this.patternInput.inputEl.addClass('pattern-search-input');
 
     // Selected patterns
     const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected Patterns', cls: 'mesh-selected-patterns-title' });
+    selectedPatternsTitle.style.display = 'none'; // Initially hide the title
     this.selectedPatternsContainer = patternCard.createEl('div', { cls: 'selected-patterns-container' });
+    this.selectedPatternsContainer.style.display = 'none'; // Initially hide the container
+
+    // Call the method to set initial visibility
+    this.updateSelectedPatternsVisibility();
 
     // Add pattern stitching toggle at the bottom left
     const stitchingContainer = patternCard.createEl('div', { cls: 'pattern-stitching-container' });
@@ -303,5 +318,22 @@ export class MeshView extends ItemView {
     submitButtonContainer.classList.remove('processing');
     submitButton.classList.remove('processing');
     submitButton.disabled = false;
+  }
+
+  private updateSelectedPatternsVisibility() {
+    const selectedPatternsTitle = this.containerEl.querySelector('.mesh-selected-patterns-title') as HTMLElement;
+    if (this.selectedPatternsContainer && selectedPatternsTitle) {
+      const isVisible = this.selectedPatterns.length > 0;
+      this.selectedPatternsContainer.style.display = isVisible ? 'block' : 'none';
+      selectedPatternsTitle.style.display = isVisible ? 'block' : 'none';
+      console.log(`Selected patterns visibility updated. Is visible: ${isVisible}`);
+    }
+  }
+
+  private createLogoElement(logoSvg: string ): HTMLElement {
+    const logoContainer = document.createElement('div');
+    logoContainer.className = 'mesh-logo-container';
+    logoContainer.innerHTML = logoSvg;
+    return logoContainer;
   }
 }

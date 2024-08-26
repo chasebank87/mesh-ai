@@ -138,6 +138,7 @@ export function updateSelectedPatternsDisplay(
     });
     container.appendChild(patternEl);
   });
+  setSelectedPatterns(selectedPatterns); // Ensure this line is present
 }
 
 export function createSelectedPatternElement(pattern: string, onRemove: (pattern: string) => void): HTMLElement {
