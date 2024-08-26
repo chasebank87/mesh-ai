@@ -20,6 +20,12 @@ export class MeshView extends ItemView {
   private selectedPatternsContainer: HTMLElement;
   private outputFileNameInput: HTMLInputElement;
   private patternStitchingEnabled: boolean;
+  private providerCard: HTMLElement;
+  private inputCard: HTMLElement;
+  private patternsCard: HTMLElement;
+  private outputCard: HTMLElement;
+  private startRotating: (card: HTMLElement) => void;
+  private stopRotating: (card: HTMLElement) => void;
 
   constructor(leaf: WorkspaceLeaf, plugin: MeshAIPlugin) {
     super(leaf);
@@ -234,74 +240,97 @@ export class MeshView extends ItemView {
     const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
     const inputSourceSelect = this.containerEl.querySelector('.mesh-input-source-select') as HTMLSelectElement;
     const tavilySearchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
-  
-    debugLog(this.plugin, "Selected provider:", providerSelect.value);
-    debugLog(this.plugin, "Selected input source:", inputSourceSelect.value);
-    debugLog(this.plugin, "Tavily search input:", tavilySearchInput.value);
-  
+
     const selectedProvider = providerSelect.value as ProviderName;
     const selectedSource = inputSourceSelect.value;
     const selectedPatterns = this.selectedPatterns;
-  
+
     try {
-      debugLog(this.plugin, "Getting input content...");
-      const input = await getInputContent(this.app, this.plugin, selectedSource, tavilySearchInput);
-      this.showLoading();
-  
-      debugLog(this.plugin, "Processing patterns...");
-      if (this.patternStitchingEnabled) {
-        const processedContent = await processStitchedPatterns(this.plugin, selectedProvider, selectedPatterns, input);
+        await this.showLoading();
+
+        // Provider initialization
+        this.startRotating(this.providerCard);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Add your provider initialization code here
+        this.stopRotating(this.providerCard);
+
+        // Input processing
+        this.startRotating(this.inputCard);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        debugLog(this.plugin, "Getting input content...");
+        const input = await getInputContent(this.app, this.plugin, selectedSource, tavilySearchInput);
+        this.stopRotating(this.inputCard);
+
+        // Pattern processing
+        this.startRotating(this.patternsCard);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        debugLog(this.plugin, "Processing patterns...");
+        let processedContent: string;
+        if (this.patternStitchingEnabled) {
+            processedContent = await processStitchedPatterns(this.plugin, selectedProvider, selectedPatterns, input);
+        } else {
+            processedContent = await processPatterns(this.plugin, selectedProvider, selectedPatterns, input);
+        }
+        this.stopRotating(this.patternsCard);
+
+        // Output creation
+        this.startRotating(this.outputCard);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         debugLog(this.plugin, "Creating output file...");
         await createOutputFile(this.plugin, processedContent, this.outputFileNameInput);
-      } else {
-        const processedContent = await processPatterns(this.plugin, selectedProvider, selectedPatterns, input);
-        debugLog(this.plugin, "Creating output file...");
-        await createOutputFile(this.plugin, processedContent, this.outputFileNameInput);
-      }
+        this.stopRotating(this.outputCard);
+
     } catch (error) {
-      debugLog(this.plugin, 'Error processing request:', error);
-      new Notice(`Error: ${error.message}`);
+        console.error('Error processing request:', error);
+        new Notice(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
-      this.hideLoading();
+        this.hideLoading();
     }
   }
 
   private async showLoading() {
     const formContainer = this.containerEl.querySelector('.mesh-form-container') as HTMLElement;
-    const cards = Array.from(formContainer.querySelectorAll('.mesh-card'));
+    const cards = Array.from(formContainer.querySelectorAll('.mesh-card')) as HTMLElement[];
     const submitButtonContainer = this.containerEl.querySelector('.mesh-submit-button-container') as HTMLElement;
     const submitButton = submitButtonContainer.querySelector('.mesh-submit-button') as HTMLButtonElement;
-  
-    // Rotate cards sequentially
-    for (let i = 0; i < cards.length; i++) {
-      const card = cards[i] as HTMLElement;
-      card.classList.add('rotating');
-      await new Promise(resolve => setTimeout(resolve, 500)); // Wait for 500ms before starting the next card
-      card.addEventListener('animationend', () => {
+
+    // Store the cards for easy access
+    this.providerCard = cards[0];
+    this.inputCard = cards[1];
+    this.patternsCard = cards[2];
+    this.outputCard = cards[3];
+
+    // Define methods to start and stop rotation
+    this.startRotating = (card: HTMLElement) => {
+        card.classList.add('rotating');
+    };
+
+    this.stopRotating = (card: HTMLElement) => {
         card.classList.remove('rotating');
-      }, { once: true });
-    }
-  
-    // Add processing class to submit button container after cards have rotated
+    };
+
+    // Add processing class to submit button container
     submitButtonContainer.classList.add('processing');
     
-    // Change button text to "Processing" with typing animation
+    // Change button text to "Processing" and disable it
     submitButton.classList.add('processing');
     submitButton.disabled = true;
-  }
+    submitButton.textContent = 'Processing...';
+}
   
   private hideLoading() {
     const formContainer = this.containerEl.querySelector('.mesh-form-container') as HTMLElement;
-    const cards = formContainer.querySelectorAll('.mesh-card');
+    const cards = Array.from(formContainer.querySelectorAll('.mesh-card')) as HTMLElement[];
     const submitButtonContainer = this.containerEl.querySelector('.mesh-submit-button-container') as HTMLElement;
     const submitButton = submitButtonContainer.querySelector('.mesh-submit-button') as HTMLButtonElement;
-  
+
     cards.forEach(card => {
-      card.classList.remove('rotating');
+        card.classList.remove('rotating');
     });
-  
+
     submitButtonContainer.classList.remove('processing');
     submitButton.classList.remove('processing');
     submitButton.disabled = false;
+    submitButton.textContent = 'Submit'; // Reset button text
   }
 }

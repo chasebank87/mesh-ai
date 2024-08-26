@@ -316,27 +316,19 @@ input:checked + .slider:before {
   animation: rotate 1s linear infinite;
 }
 
-@keyframes card-rotate {
-  0% {
-    transform: rotateY(0deg);
-  }
-  50% {
-    transform: rotateY(180deg);
-  }
-  100% {
-    transform: rotateY(360deg);
-  }
+@keyframes rotate {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.rotating {
+  animation: rotate 2s ease-in-out infinite;
 }
 
 .mesh-card {
   transition: all 0.5s ease;
   transform-style: preserve-3d;
 }
-
-.mesh-card.rotating {
-  animation: card-rotate 2s ease-in-out;
-}
-
 
 .mesh-submit-button {
   width: 100%;
@@ -451,4 +443,13 @@ input:checked + .slider:before {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes rotate {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.rotating {
+  animation: rotate 2s linear infinite;
 }
