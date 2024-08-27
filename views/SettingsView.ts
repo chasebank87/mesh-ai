@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting, DropdownComponent, ButtonComponent, Not
 import { PluginSettings, ProviderName } from '../types';
 import MeshAIPlugin from '../main';
 import { debugLog } from '../utils/MeshUtils';
+import { MeshView } from './MeshView';
 
 export class SettingsView extends PluginSettingTab {
   plugin: MeshAIPlugin;
@@ -77,6 +78,7 @@ export class SettingsView extends PluginSettingTab {
         dropdown.setValue(this.plugin.settings.selectedProvider)
           .onChange(async (value: ProviderName) => {
             this.plugin.settings.selectedProvider = value;
+            this.plugin.updateMeshViewProvider(value as ProviderName)
             await this.plugin.saveSettings();
           });
       });

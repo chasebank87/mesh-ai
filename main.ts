@@ -12,6 +12,7 @@ import { YoutubeProvider } from './providers/YoutubeProvider';
 import { TavilyProvider } from './providers/TavilyProvider';
 import { debugLog } from './utils/MeshUtils';
 import { GitHubApiItem } from './types';
+import { ProcessActiveNoteModal } from './modals/ProcessActiveNoteModal';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
@@ -30,6 +31,15 @@ export default class MeshAIPlugin extends Plugin {
       MESH_VIEW_TYPE,
       (leaf) => new MeshView(leaf, this)
     );
+
+    // Add the new command
+    this.addCommand({
+      id: 'process-active-note',
+      name: 'Process Active Note',
+      callback: () => {
+        new ProcessActiveNoteModal(this.app, this).open();
+      }
+    });
 
     this.addRibbonIcon('brain', 'Mesh AI Integration', () => {
       this.activateView();
@@ -184,6 +194,7 @@ export default class MeshAIPlugin extends Plugin {
       await this.app.vault.createFolder(this.settings.fabricPatternsFolder);
     }
   }
+  
 
   getProvider(providerName: ProviderName) {
     switch (providerName) {
@@ -202,5 +213,14 @@ export default class MeshAIPlugin extends Plugin {
       default:
         throw new Error(`Unknown provider: ${providerName}`);
     }
+  }
+
+  updateMeshViewProvider(newProvider: ProviderName) {
+    const meshLeaves = this.app.workspace.getLeavesOfType(MESH_VIEW_TYPE);
+    meshLeaves.forEach((leaf) => {
+      if (leaf.view instanceof MeshView) {
+        (leaf.view as MeshView).updateProviderSelect(newProvider);
+      }
+    });
   }
 }

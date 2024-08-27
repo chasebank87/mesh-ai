@@ -53,9 +53,31 @@ export class MeshView extends ItemView {
     const formContainer = container.createEl('div', { cls: 'mesh-form-container' });
 
     // Provider selection card
+    const PROVIDERS: Record<ProviderName, ProviderName> = {
+      openai: 'openai',
+      google: 'google',
+      microsoft: 'microsoft',
+      anthropic: 'anthropic',
+      grocq: 'grocq',
+      ollama: 'ollama'
+    };
     const providerCard = this.createCard(formContainer, 'provider');
-    const providerSelect = UIHelper.createSelect(providerCard, 'mesh-provider-select', ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama']);
+    const providerSelect = UIHelper.createSelect(
+        providerCard, 
+        'mesh-provider-select', 
+        Object.values(PROVIDERS)
+    );
 
+    // Set the default provider from settings
+    providerSelect.value = this.plugin.settings.selectedProvider;
+
+    // Add an event listener to update the settings when the provider changes
+    providerSelect.addEventListener('change', (event) => {
+        const newProvider = (event.target as HTMLSelectElement).value as ProviderName;
+        this.plugin.settings.selectedProvider = newProvider;
+        this.plugin.saveSettings();
+    });
+    
     // Input source selection card
     const inputCard = this.createCard(formContainer, 'Input Source');
 
@@ -377,6 +399,15 @@ export class MeshView extends ItemView {
         tavilySearchInput.classList.remove('tavily-hidden');
     } else {
         tavilySearchInput.classList.add('tavily-hidden');
+    }
+  }
+
+  updateProviderSelect(newProvider: ProviderName) {
+    const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
+    if (providerSelect && providerSelect.value !== newProvider) {
+      providerSelect.value = newProvider;
+      // Trigger the change event
+      providerSelect.dispatchEvent(new Event('change'));
     }
   }
 }
