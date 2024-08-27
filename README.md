@@ -5,9 +5,7 @@ If you like this plugin, feel free to support the development by buying a coffee
 
 <div>
 
-<img src="bmc_qr.png" height=80px>
-
-<a href="https://www.buymeacoffee.com/chasebank87" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 80px !important;width: 250px !important;" ></a>
+<img src="bmc_qr.png" height=80px><a href="https://www.buymeacoffee.com/chasebank87" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 80px !important;width: 250px !important;" ></a>
 
 </div>
 
