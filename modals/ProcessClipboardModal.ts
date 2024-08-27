@@ -17,6 +17,9 @@ export class ProcessClipboardModal extends Modal {
     private providerSelect: DropdownComponent;
     private loadingOverlay: HTMLElement;
     private clipboardPreview: HTMLTextAreaElement;
+    private currentSelectedIndex: number = -1;
+    private patternResultElements: HTMLElement[] = [];
+  
   
     constructor(app: App, plugin: MeshAIPlugin) {
         super(app);
@@ -27,6 +30,8 @@ export class ProcessClipboardModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
+        this.contentEl.addClass('mesh-modal');
+        
         // Create loading overlay
         this.loadingOverlay = contentEl.createEl('div', { cls: 'mesh-loading-overlay' });
         this.loadingOverlay.createEl('div', { cls: 'mesh-loading-spinner' });
@@ -103,9 +108,16 @@ export class ProcessClipboardModal extends Modal {
                         () => this.patternInput.setValue(''),
                         () => this.patternResults.empty()
                     );
+                }, (resultElements) => {
+                    // Handle updated results
+                    this.patternResultElements = resultElements;
+                    this.currentSelectedIndex = resultElements.length > 0 ? 0 : -1;
+                    this.highlightCurrentResult();
                 });
             });
 
+// Add keydown event listener to the pattern input
+this.patternInput.inputEl.addEventListener('keydown', this.handlePatternInputKeydown.bind(this));
         this.patternResults = patternSearchContainer.createEl('div', { cls: 'pattern-results' });
 
         // Selected patterns
@@ -182,4 +194,62 @@ export class ProcessClipboardModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
     }
+
+
+  private handlePatternInputKeydown(event: KeyboardEvent) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
+      event.preventDefault();
+      
+      if (event.key === 'ArrowDown') {
+        this.navigatePatternResults(1);
+      } else if (event.key === 'ArrowUp') {
+        this.navigatePatternResults(-1);
+      } else if (event.key === 'Enter') {
+        this.selectCurrentPattern();
+      }
+    }
+  }
+
+  private navigatePatternResults(direction: 1 | -1) {
+    const resultsCount = this.patternResultElements.length;
+    if (resultsCount === 0) return;
+
+    this.currentSelectedIndex = (this.currentSelectedIndex + direction + resultsCount) % resultsCount;
+    this.highlightCurrentResult();
+  }
+
+  private highlightCurrentResult() {
+    this.patternResultElements.forEach((el, index) => {
+      el.classList.toggle('selected', index === this.currentSelectedIndex);
+    });
+  }
+
+  private selectCurrentPattern() {
+    if (this.currentSelectedIndex >= 0 && this.currentSelectedIndex < this.patternResultElements.length) {
+      const selectedElement = this.patternResultElements[this.currentSelectedIndex];
+      const patternName = selectedElement.textContent?.trim() || '';
+      this.handlePatternSelect(patternName);
+    }
+  }
+
+  private handlePatternSelect(pattern: string) {
+    onPatternSelect(
+      pattern,
+      this.selectedPatterns,
+      () => updateSelectedPatternsDisplay(
+        this.containerEl.querySelector('.mesh-selected-patterns-title') as HTMLElement,
+        this.selectedPatternsContainer,
+        this.selectedPatterns,
+        (updatedPatterns) => {
+          this.selectedPatterns = updatedPatterns;
+        }
+      ),
+      () => this.patternInput.setValue(''),
+      () => {
+        this.patternResults.empty();
+        this.patternResultElements = [];
+        this.currentSelectedIndex = -1;
+      }
+    );
+  }
 }

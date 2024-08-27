@@ -26,6 +26,8 @@ export class MeshView extends ItemView {
   private outputCard: HTMLElement;
   private startRotating: (card: HTMLElement) => void;
   private stopRotating: (card: HTMLElement) => void;
+  private currentSelectedIndex: number = -1;
+  private patternResultElements: HTMLElement[] = [];
 
   constructor(leaf: WorkspaceLeaf, plugin: MeshAIPlugin) {
     super(leaf);
@@ -126,31 +128,22 @@ export class MeshView extends ItemView {
     // Patterns card (combining search and selected patterns)
     const patternCard = this.createCard(formContainer, 'patterns');
 
-    // Pattern search container
     const patternSearchContainer = patternCard.createEl('div', { cls: 'pattern-search-container' });
     this.patternInput = new TextComponent(patternSearchContainer)
       .setPlaceholder('Search patterns...')
       .onChange((query) => {
-        onPatternSearch(this.plugin, query, this.patternResults, (pattern) => {
-          onPatternSelect(
-            pattern,
-            this.selectedPatterns,
-            () => updateSelectedPatternsDisplay(
-              selectedPatternsTitle,
-              this.selectedPatternsContainer,
-              this.selectedPatterns,
-              (updatedPatterns) => {
-                this.selectedPatterns = updatedPatterns;
-              }
-            ),
-            () => this.patternInput.setValue(''),
-            () => this.patternResults.empty()
-          );
+        onPatternSearch(this.plugin, query, this.patternResults, this.handlePatternSelect.bind(this), (resultElements) => {
+          this.patternResultElements = resultElements;
+          this.currentSelectedIndex = resultElements.length > 0 ? 0 : -1;
+          this.highlightCurrentResult();
         });
       });
 
     this.patternResults = patternSearchContainer.createEl('div', { cls: 'pattern-results' });
     this.patternInput.inputEl.addClass('pattern-search-input');
+
+    // Add keydown event listener to the pattern input
+    this.patternInput.inputEl.addEventListener('keydown', this.handlePatternInputKeydown.bind(this));
 
     // Selected patterns
     const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected Patterns', cls: 'mesh-selected-patterns-title' });
@@ -409,5 +402,62 @@ export class MeshView extends ItemView {
       // Trigger the change event
       providerSelect.dispatchEvent(new Event('change'));
     }
+  }
+  
+  private handlePatternInputKeydown(event: KeyboardEvent) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
+      event.preventDefault();
+      
+      if (event.key === 'ArrowDown') {
+        this.navigatePatternResults(1);
+      } else if (event.key === 'ArrowUp') {
+        this.navigatePatternResults(-1);
+      } else if (event.key === 'Enter') {
+        this.selectCurrentPattern();
+      }
+    }
+  }
+
+  private navigatePatternResults(direction: 1 | -1) {
+    const resultsCount = this.patternResultElements.length;
+    if (resultsCount === 0) return;
+
+    this.currentSelectedIndex = (this.currentSelectedIndex + direction + resultsCount) % resultsCount;
+    this.highlightCurrentResult();
+  }
+
+  private highlightCurrentResult() {
+    this.patternResultElements.forEach((el, index) => {
+      el.classList.toggle('selected', index === this.currentSelectedIndex);
+    });
+  }
+
+  private selectCurrentPattern() {
+    if (this.currentSelectedIndex >= 0 && this.currentSelectedIndex < this.patternResultElements.length) {
+      const selectedElement = this.patternResultElements[this.currentSelectedIndex];
+      const patternName = selectedElement.textContent?.trim() || '';
+      this.handlePatternSelect(patternName);
+    }
+  }
+
+  private handlePatternSelect(pattern: string) {
+    onPatternSelect(
+      pattern,
+      this.selectedPatterns,
+      () => updateSelectedPatternsDisplay(
+        this.containerEl.querySelector('.mesh-selected-patterns-title') as HTMLElement,
+        this.selectedPatternsContainer,
+        this.selectedPatterns,
+        (updatedPatterns) => {
+          this.selectedPatterns = updatedPatterns;
+        }
+      ),
+      () => this.patternInput.setValue(''),
+      () => {
+        this.patternResults.empty();
+        this.patternResultElements = [];
+        this.currentSelectedIndex = -1;
+      }
+    );
   }
 }
