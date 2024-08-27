@@ -98,10 +98,10 @@ Contributions are welcome! Please feel free to submit a pull request or open an 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/chasebank87/unofficial-fabric-plugin/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/chasebank87/mesh-ai/blob/main/LICENSE) file for details.
 
 ---
 
-For more information, please visit our [GitHub repository](https://github.com/chasebank87/unofficial-fabric-plugin).
+For more information, please visit our [GitHub repository](https://github.com/chasebank87/mesh-ai).
 
 ---
