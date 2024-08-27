@@ -39,7 +39,8 @@ export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSo
     throw new Error('No input content available');
   }
 
-  return input;
+  // Sanitize the input before returning
+  return sanitizeContent(input);
 }
 
 export function debugLog(plugin: MeshAIPlugin, ...args: unknown[]): void {
@@ -49,12 +50,14 @@ export function debugLog(plugin: MeshAIPlugin, ...args: unknown[]): void {
 }
 
 export async function processPatterns(plugin: MeshAIPlugin, selectedProvider: ProviderName, selectedPatterns: string[], initialContent: string): Promise<string> {
+  debugLog(plugin, 'Processing patterns:', selectedPatterns);
   let currentContent = initialContent;
   for (const pattern of selectedPatterns) {
     const patternContent = await getPatternContent(plugin, pattern);
+    const sanitizedPatternContent = sanitizeContent(patternContent);
     
     const fullPrompt = FULL_PROMPT_TEMPLATE
-      .replace('{patternContents}', patternContent)
+      .replace('{patternContents}', sanitizedPatternContent)
       .replace('{input}', currentContent);
 
     debugLog(plugin, `Applying pattern: ${pattern}`);
@@ -67,14 +70,25 @@ export async function processPatterns(plugin: MeshAIPlugin, selectedProvider: Pr
 }
 
 export async function processStitchedPatterns(plugin: MeshAIPlugin, provider: ProviderName, patterns: string[], input: string): Promise<string> {
+  debugLog(plugin, 'Processing stitched patterns:', patterns);
   let stitchedContent = '';
   for (const pattern of patterns) {
     const patternContent = await getPatternContent(plugin, pattern);
+    const sanitizedPatternContent = sanitizeContent(patternContent);
+
     const prompt = FULL_PROMPT_TEMPLATE
-      .replace('{patternContents}', patternContent)
+      .replace('{patternContents}', sanitizedPatternContent)
       .replace('{input}', input);
     const response = await handleLLMRequest(plugin, provider, prompt);
     stitchedContent += `# ${pattern}\n\n---\n\n${response}\n\n\n`;
   }
   return stitchedContent;
+}
+
+export function sanitizeContent(content: string): string {
+  return content
+      .replace(/\*{10,}/g, '') // Remove 10 or more asterisks
+      .replace(/!{10,}/g, '')  // Remove 10 or more exclamation marks
+      .replace(/\{patternContent\}/g, '') // Remove {patternContent}
+      .replace(/\{input\}/g, ''); // Remove {input}
 }

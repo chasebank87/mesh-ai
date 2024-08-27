@@ -24,6 +24,7 @@ interface PluginSettings {
   tavilyApiKey: string;
   youtubeApiKey: string;
   ollamaServerUrl: string;
+  microsoftEndpointUrl: string;
   selectedProvider: ProviderName;
   selectedModel: string;
   providerModels: ProviderModels;
@@ -32,6 +33,7 @@ interface PluginSettings {
   meshOutputFolder: string;
   patternStitchingEnabled: boolean;
   enableDebugging: boolean;
+  workflows: Workflow[];
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
@@ -43,6 +45,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
   tavilyApiKey: '',
   youtubeApiKey: '',
   ollamaServerUrl: 'http://localhost:11434',
+  microsoftEndpointUrl: '',
   selectedProvider: 'openai',
   selectedModel: '',
   providerModels: {
@@ -58,6 +61,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
   meshOutputFolder: '',
   patternStitchingEnabled: false,
   enableDebugging: false,
+  workflows: []
 };
 
 interface GitHubApiItem {
@@ -111,6 +115,13 @@ interface OllamaModelsResponse {
   models: OllamaModel[];
 }
 
+interface Workflow {
+  name: string;
+  provider: ProviderName;
+  patterns: string[];
+  usePatternStitching: boolean;
+}
+
 // At the bottom of the file, modify your exports:
 export type {
   ProviderName,
@@ -124,6 +135,7 @@ export type {
   OllamaModelDetails,
   OllamaModel,
   OllamaModelsResponse,
+  Workflow
 };
 
 // Export the DEFAULT_SETTINGS separately as it's a value, not a type

@@ -1,94 +1,109 @@
+
 # Mesh AI
 
-### Fabric Alternative
-
-This plugin integrates various AI providers into Obsidian, allowing for AI-generated content and interactions directly within your notes. 
-
 If you like this plugin, feel free to support the development by buying a coffee:
+
 <div>
+
 <img src="bmc_qr.png" height=80px>
+
 <a href="https://www.buymeacoffee.com/chasebank87" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 80px !important;width: 250px !important;" ></a>
+
 </div>
 
-
-## Table of Contents
-
+# Table of Contents
 - [Mesh AI](#mesh-ai)
-    - [Fabric Alternative](#fabric-alternative)
-  - [Table of Contents](#table-of-contents)
-  - [Description](#description)
+- [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Compatibility](#compatibility)
+    - [Under Development](#under-development)
+  - [Differences from Official Fabric Plugin](#differences-from-official-fabric-plugin)
   - [Installation](#installation)
   - [Usage](#usage)
-    - [General Workflow](#general-workflow)
-    - [Detailed Steps](#detailed-steps)
-  - [Settings](#settings)
-    - [Configuration Options](#configuration-options)
-  - [Commands](#commands)
-  - [Patterns](#patterns)
-    - [Managing Patterns](#managing-patterns)
+  - [Contributing](#contributing)
   - [License](#license)
 
-## Description
+## Overview
 
-A plugin to integrate AI functionalities into Obsidian. Supported providers include OpenAI, Google, Microsoft, Anthropic, Grocq, and Ollama. This plugin allows for querying these services, managing patterns for content generation, and integrating responses directly into your Obsidian vault.
+The Mesh AI plugin emulates the functionality provided by the [Fabric tool](https://github.com/danielmiessler/fabric) within your Obsidian vault. This plugin allows users to run and manage multiple text processing patterns on their notes, the clipboard, or Tavily search results. It integrates with various AI services and platforms to enhance your productivity within Obsidian.
+
+## Features
+
+- **Process Active Note, Clipboard, or Tavily Search Results:** The plugin allows you to apply patterns to the currently active note, clipboard content, or results from Tavily search.
+  
+- **Pattern Processing:**
+  - **Sequential Mode (Default):** Process multiple patterns in order, where the output of the first pattern is used as the input for the next.
+  - **Pattern Stitch Mode:** Process multiple patterns and output the results of each pattern collectively.
+
+- **YouTube Link Detection:** Automatically detects YouTube links, fetches their transcripts, and uses the transcripts as a source input for processing.
+
+- **Workflow Creation:** Create workflows from the settings view, which can then be added as command palette items for quick access.
+
+- **Pattern Management:**
+  - Download patterns from the Fabric repository.
+  - Maintain a custom pattern folder to manage your own patterns.
+
+- **AI Service Integration:** Utilize various major providers such as:
+  - `openai`
+  - `google`
+  - `microsoft`
+  - `anthropic`
+  - `grocq`
+  - `ollama`
+
+## Compatibility
+
+Currently, the plugin has been tested and confirmed to work with:
+- `Grocq`
+- `OpenAI`
+- `Llama`
+
+### Under Development
+
+We are currently working on testing and development for:
+- `Microsoft Azure AI Services`
+- `Anthropic`
+- `google`
+
+## Differences from Official Fabric Plugin
+
+This plugin is a sibling project to the [Unofficial Fabric Plugin](https://github.com/chasebank87/unofficial-fabric-plugin). The key differences include:
+- **Visual Appearance:** Differences in the user interface.
+- **No Additional Dependencies:** You do not need to have Fabric or Fabric Connector installed for this plugin to work.
 
 ## Installation
 
-1. **Download the plugin**: Get the latest release from the repository.
-2. **Install the plugin**: Place the plugin files in `<vault>/.obsidian/plugins/mesh-ai-integration`.
-3. **Enable the plugin**: Go to the Obsidian settings, find the Mesh AI Integration Plugin, and enable it.
+To install the plugin, follow these steps:
+1. Download the latest release from the [GitHub repository](https://github.com/chasebank87/unofficial-fabric-plugin).
+2. Extract the files into your Obsidian vault's `plugins` directory.
+3. Enable the plugin from the Obsidian settings menu.
+
+-OR-
+
+Install using the BRAT Plugin:
+ 
+1. Install the BRAT Plugin from the Obsidian Community Plugins list.
+2. Open the BRAT settings and add the repository URL: `https://github.com/chasebank87/meshl-ai`.
+3. Follow the prompts to install and enable the Mesh AI plugin.
 
 ## Usage
 
-### General Workflow
+1. Open the settings view within Obsidian and configure your preferred AI service provider.
+2. Define your text processing patterns and workflows.
+3. Use the command palette to apply your workflows to your notes, clipboard, or Tavily search results.
+4. Use the Mesh AI Interface
 
-1. **Select provider**: Choose an AI service provider from the available options.
-2. **Choose input source**: Decide whether the input text will come from the active note, clipboard, or a Tavily search.
-3. **Select patterns**: Add patterns for processing the content.
-4. **Generate output**: Submit your inputs to generate an AI response, which will be directly integrated into a new note or the current content.
+## Contributing
 
-### Detailed Steps
-
-1. Open the Mesh AI view using the ribbon icon.
-2. Select the desired AI provider and model.
-3. Choose the source of your input: active note, clipboard, or perform a Tavily search.
-4. Select and order patterns for processing the content.
-5. Click "Submit" to generate the AI response.
-
-## Settings
-
-Access the settings tab for Mesh AI Integration Plugin via the Obsidian settings panel. 
-
-### Configuration Options
-
-- **API Keys**: Enter the API keys for OpenAI, Google, Microsoft, Anthropic, Grocq, and Tavily.
-- **Model Selection**: For each provider, select the model to be used.
-- **Custom Patterns Folder**: Specify the folder path for your custom patterns.
-- **Fabric Patterns Folder**: Specify the default folder for downloaded fabric patterns.
-- **Mesh Output Folder**: Specify the folder for the AI-generated output.
-- **Enable Debugging**: Toggle console logging for debugging purposes.
-
-## Commands
-
-This plugin supports several commands accessible via the command palette:
-
-- **Load Patterns**: Load patterns from custom and fabric folders.
-- **Download Patterns from GitHub**: Download patterns from an official repository.
-- **Clear Fabric Patterns Folder**: Delete all the patterns from the fabric patterns folder.
-
-## Patterns
-
-Patterns are markdown files with specific structures recognized by the plugin to modify and process the input content before querying the AI provider. You can manage patterns within the specified folders.
-
-### Managing Patterns
-
-- **Load Patterns**: Automatically detect and list patterns from the custom and fabric folders.
-- **Download Patterns**: Fetch patterns from a GitHub repository and store/update them in the fabric patterns folder.
+Contributions are welcome! Please feel free to submit a pull request or open an issue if you encounter any problems or have suggestions for new features.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/chasebank87/unofficial-fabric-plugin/blob/main/LICENSE) file for details.
 
 ---
 
-For any further queries or issues, please refer to the official [GitHub repository](https://github.com/your-rerepository/mesh-ai-integration).
+For more information, please visit our [GitHub repository](https://github.com/chasebank87/unofficial-fabric-plugin).
+
+---

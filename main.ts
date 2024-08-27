@@ -1,7 +1,7 @@
 import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice } from 'obsidian';
 import { MeshView, MESH_VIEW_TYPE } from './views/MeshView';
 import { SettingsView } from './views/SettingsView';
-import { PluginSettings, DEFAULT_SETTINGS, ProviderName } from './types';
+import { PluginSettings, DEFAULT_SETTINGS, ProviderName, Workflow } from './types';
 import { OpenAIProvider } from './providers/OpenAIProvider';
 import { GoogleProvider } from './providers/GoogleProvider';
 import { MicrosoftProvider } from './providers/MicrosoftProvider';
@@ -13,6 +13,11 @@ import { TavilyProvider } from './providers/TavilyProvider';
 import { debugLog } from './utils/MeshUtils';
 import { GitHubApiItem } from './types';
 import { ProcessActiveNoteModal } from './modals/ProcessActiveNoteModal';
+import { ProcessClipboardModal } from 'modals/ProcessClipboardModal';
+import { TavilySearchModal } from 'modals/TavilySearchModal';
+import { processWorkflow } from './utils/WorkflowUtils';
+import { createOutputFile } from './utils/FileUtils';
+import { processPatterns, processStitchedPatterns } from './utils/MeshUtils';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
@@ -41,10 +46,82 @@ export default class MeshAIPlugin extends Plugin {
       }
     });
 
+    // Add the new command
+    this.addCommand({
+      id: 'process-clipboard',
+      name: 'Process Clipboard',
+      callback: () => {
+        new ProcessClipboardModal(this.app, this).open();
+      }
+    });
+
+    // Add workflow commands
+    this.createWorkflowCommands();
+
     this.addRibbonIcon('brain', 'Mesh AI Integration', () => {
       this.activateView();
     });
   }
+
+  createWorkflowCommands() {
+    // Remove existing workflow commands
+    this.removeWorkflowCommands();
+    
+    // Add new workflow commands
+    this.settings.workflows.forEach((workflow, index) => {
+      this.addCommand({
+          id: `mesh-ai-workflow-${index + 1}-active-note`,
+          name: `Run Workflow: ${workflow.name} (Active Note)`,
+          callback: () => this.runWorkflow(workflow, 'active-note'),
+      });
+
+      this.addCommand({
+          id: `mesh-ai-workflow-${index + 1}-clipboard`,
+          name: `Run Workflow: ${workflow.name} (Clipboard)`,
+          callback: () => this.runWorkflow(workflow, 'clipboard'),
+      });
+
+      this.addCommand({
+          id: `mesh-ai-workflow-${index + 1}-tavily`,
+          name: `Run Workflow: ${workflow.name} (Tavily)`,
+          callback: () => new TavilySearchModal(this.app, this, workflow).open(),
+        });
+    });
+  }
+  
+  private removeWorkflowCommands() {
+    // This method will be called when reloading commands
+    // It doesn't need to do anything as Obsidian handles command cleanup automatically
+}
+
+async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
+  let input: string;
+  if (inputType === 'active-note') {
+      const activeFile = this.app.workspace.getActiveFile();
+      if (!activeFile) {
+          new Notice('No active file');
+          return;
+      }
+      input = await this.app.vault.read(activeFile);
+  } else {
+      input = await navigator.clipboard.readText();
+  }
+
+  try {
+      let result: string;
+      if (workflow.usePatternStitching) {
+          result = await processStitchedPatterns(this, workflow.provider, workflow.patterns, input);
+      } else {
+          result = await processPatterns(this, workflow.provider, workflow.patterns, input);
+      }
+      const fileName = `Workflow Output ${new Date().toISOString().replace(/:/g, '-')}`;
+      await createOutputFile(this, result, fileName);
+      new Notice('Workflow processed successfully');
+  } catch (error) {
+      console.error('Error processing workflow:', error);
+      new Notice(`Error: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
   async loadParticlesJS() {
     return new Promise<void>((resolve) => {
