@@ -55,7 +55,7 @@ The Mesh AI plugin emulates the functionality provided by the [Fabric tool](http
 Currently, the plugin has been tested and confirmed to work with:
 - `Grocq`
 - `OpenAI`
-- `Llama`
+- `Ollama`
 
 ### Under Development
 
