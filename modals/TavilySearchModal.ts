@@ -22,23 +22,37 @@ export class TavilySearchModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-
+    
+        contentEl.addClass('mesh-modal-tavily');
+    
         // Create loading overlay
         this.loadingOverlay = contentEl.createEl('div', { cls: 'mesh-loading-overlay' });
         this.loadingOverlay.createEl('div', { cls: 'mesh-loading-spinner' });
         this.loadingOverlay.style.display = 'none';
-
-        new Setting(contentEl)
-            .setName('Tavily Search Query')
-            .addText(text => text
-                .setPlaceholder('Enter your search query')
-                .onChange(value => this.searchQuery = value));
-
-        new Setting(contentEl)
-            .addButton(btn => btn
-                .setButtonText('Run Workflow')
-                .setCta()
-                .onClick(() => this.runWorkflow()));
+    
+        // Add title
+        contentEl.createEl('h2', { text: 'Tavily Search', cls: 'mesh-modal-tavily-title' });
+    
+        // Create search container
+        const searchContainer = contentEl.createEl('div', { cls: 'mesh-modal-tavily-search-container' });
+    
+        // Add search input
+        const searchInput = searchContainer.createEl('input', {
+            type: 'text',
+            placeholder: 'Enter your search query',
+            cls: 'mesh-tavily-input'
+        });
+        searchInput.addEventListener('input', (e) => this.searchQuery = (e.target as HTMLInputElement).value);
+    
+        // Add search icon
+        searchContainer.createEl('span', { text: '🔍', cls: 'mesh-modal-tavily-search-icon' });
+    
+        // Add run workflow button
+        const runButton = contentEl.createEl('button', {
+            text: 'Run Workflow',
+            cls: 'mesh-modal-tavily-button'
+        });
+        runButton.addEventListener('click', () => this.runWorkflow());
     }
 
     async runWorkflow() {

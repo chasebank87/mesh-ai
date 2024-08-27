@@ -78,7 +78,6 @@
 
 .mesh-provider-select,
 .mesh-input-source-select,
-.mesh-output-filename-input,
 .mesh-pattern-select {
   width: 100%;
   height: 45px;
@@ -93,22 +92,64 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.mesh-output-filename-input {
+  width: 100% !important;
+  height: 45px !important;
+  padding: 0 15px !important;
+  font-size: 14px !important;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  transition: all 0.3s ease !important;
+
+  /* Improvements */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+.mesh-output-filename-input:focus {
+  border-color: var(--interactive-accent) !important;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover) !important;
+}
+
+.mesh-output-filename-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.7 !important;
+}
+
 .tavily-search-container {
   overflow: hidden;
 }
 
 .mesh-tavily-input {
-  width: 100%;
-  height: 45px;
-  padding: 0 15px;
-  font-size: 14px;
+  width: 100% !important;
+  height: 45px !important;
+  padding: 0 15px !important;
+  font-size: 14px !important;
   color: var(--text-normal) !important;
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  box-sizing: border-box;
-  appearance: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+  background-color: var(--background-primary) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  transition: all 0.3s ease !important;
+
+  /* Improvements */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+.mesh-tavily-input:focus {
+  border-color: var(--interactive-accent) !important;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover) !important;
+}
+
+.mesh-tavily-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.7 !important;
 }
 
 .mesh-tavily-input.tavily-hidden {
@@ -148,7 +189,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  width: 100%;
+  width: 98%;
   max-height: 200px;
   overflow-y: auto;
   background-color: var(--background-primary);
@@ -158,6 +199,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   display: none;
+  margin-left: 1%;
 }
 
 .pattern-results:not(:empty) {
@@ -504,9 +546,11 @@ input:checked + .slider:before {
   justify-content: space-between;
   width: 75%;
   margin: 0 auto;
-  background-color: var(--background-primary);
+  background-color: var(--background-primary-alt);
   border-radius: 20px;
   overflow: hidden;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 3px;
 }
 
 .input-toggle-label {
@@ -524,26 +568,72 @@ input:checked + .slider:before {
   padding: 10px;
   cursor: pointer;
   transition: color 0.3s;
+  position: relative;
+  z-index: 2;
 }
 
 .input-toggle-slider {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 33.33%;
-  height: 100%;
-  background-color: var(--interactive-accent);
-  border-radius: 0px;
-  transition: transform 0.3s ease !important;
+  top: 3px;
+  left: 3px;
+  width: 33%;
+  height: calc(100% - 6px);
+  background: linear-gradient(to bottom, var(--interactive-accent), var(--interactive-accent-hover));
+  border-radius: 17px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.input-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 95%;
+  height: 85%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  border-radius: 15px;
 }
 
 .input-toggle-input:checked + .input-toggle-text {
-  background-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
+.input-toggle-input:checked ~ .input-toggle-slider {
+  transform: translateX(100%);
+}
+
+.input-toggle-container:hover .input-toggle-slider {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .pattern-search-input {
-  width: 100%;
+  width: 100% !important;
+  height: 45px !important;
+  padding: 0 15px !important;
+  font-size: 14px !important;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  transition: all 0.3s ease !important;
+
+  /* Improvements */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+.pattern-search-input:focus {
+  border-color: var(--interactive-accent) !important;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover) !important;
+}
+
+.pattern-search-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.7 !important;
 }
 
 .input-toggle-slider[data-position="0"] {
@@ -599,7 +689,7 @@ input:checked + .slider:before {
   background-color: var(--background-primary);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 50px !important;
+  padding: 25px !important;
   max-width: 500px;
   width: 100%;
   margin: auto;
@@ -743,4 +833,112 @@ input:checked + .slider:before {
 
 .mesh-modal input:checked + .slider:before {
   transform: translateX(20px);
+}
+
+.mesh-modal-tavily {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  background-color: var(--background-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mesh-modal-tavily-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.mesh-modal-tavily-search-container {
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.mesh-tavily-input {
+  width: 100% !important;
+  height: 50px !important;
+  padding: 0 50px 0 20px !important;
+  font-size: 16px !important;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary) !important;
+  border: 2px solid var(--interactive-accent) !important;
+  border-radius: 25px !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+.mesh-tavily-input:focus {
+  box-shadow: 0 0 0 3px var(--interactive-accent-hover) !important;
+}
+
+.mesh-tavily-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.7 !important;
+}
+
+.mesh-modal-tavily-search-icon {
+  position: absolute;
+  right: 15px;
+  top: 30% !important;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 50px; /* Match the height of the input */
+  color: var(--text-muted);
+  pointer-events: none;
+  font-size: 18px; /* Adjust as needed for your icon */
+}
+
+.mesh-modal-tavily-button {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  border: none !important;
+  border-radius: 25px !important;
+  padding: 10px 20px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.mesh-modal-tavily-button:hover {
+  background-color: var(--interactive-accent-hover) !important;
+}
+
+.mesh-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.mesh-loading-spinner {
+  border: 4px solid var(--background-primary);
+  border-top: 4px solid var(--interactive-accent);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
