@@ -57,19 +57,48 @@ export class MeshView extends ItemView {
     const providerSelect = UIHelper.createSelect(providerCard, 'mesh-provider-select', ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama']);
 
     // Input source selection card
-    const inputCard = this.createCard(formContainer, 'input');
-    const inputSourceSelect = UIHelper.createSelect(inputCard, 'mesh-input-source-select', ['active-note', 'clipboard', 'tavily']);
+    const inputCard = this.createCard(formContainer, 'Input Source');
+
+    // Create a container for the toggle switch
+    const toggleContainer = inputCard.createEl('div', { cls: 'input-toggle-container' });
+
+    // Create a slider element
+    const slider = toggleContainer.createEl('div', { cls: 'input-toggle-slider' });
+
+    // Create radio buttons for the toggle switch
+    const options = ['active-note', 'clipboard', 'tavily'];
+    options.forEach((option, index) => {
+        const label = toggleContainer.createEl('label', { cls: 'input-toggle-label' });
+        const input = label.createEl('input', {
+            attr: {
+                type: 'radio',
+                name: 'input-source',
+                value: option
+            },
+            cls: 'input-toggle-input'
+        });
+
+        // Set the default checked option
+        if (option === 'active-note') {
+            input.checked = true;
+        }
+
+        label.createEl('span', { text: option.charAt(0).toUpperCase() + option.slice(1), cls: 'input-toggle-text' });
+
+        // Add event listener to handle changes
+        input.addEventListener('change', () => {
+            this.handleInputSourceChange(option, index);
+        });
+    });
 
     // Tavily search input
-    const tavilySearchInput = inputCard.createEl('input', { 
-      type: 'text', 
-      placeholder: 'Enter Tavily search query',
-      cls: 'mesh-tavily-input hidden'
-    });
-    tavilySearchInput.addClass('hidden');
-
-    inputSourceSelect.addEventListener('change', () => {
-      tavilySearchInput.toggleClass('hidden', inputSourceSelect.value !== 'tavily');
+    const tavilySearchContainer = inputCard.createEl('div', { cls: 'tavily-search-container' });
+    const tavilySearchInput = tavilySearchContainer.createEl('input', { 
+        attr: {
+            type: 'text', 
+            placeholder: 'Enter Tavily search query'
+        },
+        cls: 'mesh-tavily-input tavily-hidden'
     });
 
     // Patterns card (combining search and selected patterns)
@@ -85,6 +114,7 @@ export class MeshView extends ItemView {
             pattern,
             this.selectedPatterns,
             () => updateSelectedPatternsDisplay(
+              selectedPatternsTitle,
               this.selectedPatternsContainer,
               this.selectedPatterns,
               (updatedPatterns) => {
@@ -98,9 +128,11 @@ export class MeshView extends ItemView {
       });
 
     this.patternResults = patternSearchContainer.createEl('div', { cls: 'pattern-results' });
+    this.patternInput.inputEl.addClass('pattern-search-input');
 
     // Selected patterns
     const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected Patterns', cls: 'mesh-selected-patterns-title' });
+    selectedPatternsTitle.addClass('hidden');
     this.selectedPatternsContainer = patternCard.createEl('div', { cls: 'selected-patterns-container' });
 
     // Add pattern stitching toggle at the bottom left
@@ -123,7 +155,6 @@ export class MeshView extends ItemView {
       new Notice(`Pattern Stitching ${status}.`);
     });
 
-
     // Output file name card
     const outputCard = this.createCard(formContainer, 'output');
     this.outputFileNameInput = outputCard.createEl('input', {
@@ -133,9 +164,9 @@ export class MeshView extends ItemView {
     });
 
     // Submit button
-  const submitButtonContainer = formContainer.createEl('div', { cls: 'mesh-submit-button-container' });
-  const submitButton = submitButtonContainer.createEl('button', { text: 'Submit', cls: 'mesh-submit-button' });
-  submitButton.addEventListener('click', this.onSubmit.bind(this));
+    const submitButtonContainer = formContainer.createEl('div', { cls: 'mesh-submit-button-container' });
+    const submitButton = submitButtonContainer.createEl('button', { text: 'Submit', cls: 'mesh-submit-button' });
+    submitButton.addEventListener('click', this.onSubmit.bind(this));
 
     // Loading element
     this.loadingElement = container.createEl('div', { text: 'Processing...', cls: 'mesh-loading' });
@@ -238,11 +269,11 @@ export class MeshView extends ItemView {
   async onSubmit() {
     debugLog(this.plugin, "onSubmit method called");
     const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
-    const inputSourceSelect = this.containerEl.querySelector('.mesh-input-source-select') as HTMLSelectElement;
+    const selectedInputSource = this.containerEl.querySelector('input[name="input-source"]:checked') as HTMLInputElement;
     const tavilySearchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
 
     const selectedProvider = providerSelect.value as ProviderName;
-    const selectedSource = inputSourceSelect.value;
+    const selectedSource = selectedInputSource ? selectedInputSource.value : 'active-note'; // Default to 'active-note' if nothing is selected
     const selectedPatterns = this.selectedPatterns;
 
     try {
@@ -332,5 +363,20 @@ export class MeshView extends ItemView {
     submitButton.classList.remove('processing');
     submitButton.disabled = false;
     submitButton.textContent = 'Submit'; // Reset button text
+  }
+
+  private handleInputSourceChange(selectedSource: string, index: number) {
+    const tavilySearchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
+    const slider = this.containerEl.querySelector('.input-toggle-slider') as HTMLElement;
+
+    // Update slider position using data attribute
+    slider.setAttribute('data-position', index.toString());
+
+    // Handle the Tavily input visibility
+    if (selectedSource === 'tavily') {
+        tavilySearchInput.classList.remove('tavily-hidden');
+    } else {
+        tavilySearchInput.classList.add('tavily-hidden');
+    }
   }
 }

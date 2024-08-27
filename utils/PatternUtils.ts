@@ -129,6 +129,7 @@ export function onPatternSelect(
 }
 
 export function updateSelectedPatternsDisplay(
+  title: HTMLElement,
   container: HTMLElement,
   selectedPatterns: string[],
   setSelectedPatterns: (patterns: string[]) => void
@@ -137,10 +138,12 @@ export function updateSelectedPatternsDisplay(
   selectedPatterns.forEach(pattern => {
     const patternEl = createSelectedPatternElement(pattern, (removedPattern) => {
       const updatedPatterns = selectedPatterns.filter(p => p !== removedPattern);
+      title.addClass('hidden');
       setSelectedPatterns(updatedPatterns);
-      updateSelectedPatternsDisplay(container, updatedPatterns, setSelectedPatterns);
+      updateSelectedPatternsDisplay(title, container, updatedPatterns, setSelectedPatterns);
     });
     container.appendChild(patternEl);
+    title.removeClass('hidden');
   });
 }
 

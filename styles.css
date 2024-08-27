@@ -27,14 +27,14 @@
 }
 
 .mesh-card {
-  border: none;
+  border: solid 1px var(--mesh-border);
   border-radius: 12px;
   padding: 25px;
   margin-bottom: 30px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.5 ease, box-shadow 0.3s ease;
   overflow: visible;
   background-color: var(--background-secondary);
 }
@@ -78,7 +78,6 @@
 
 .mesh-provider-select,
 .mesh-input-source-select,
-.mesh-tavily-input,
 .mesh-output-filename-input,
 .mesh-pattern-select {
   width: 100%;
@@ -94,6 +93,37 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.tavily-search-container {
+  overflow: hidden;
+}
+
+.mesh-tavily-input {
+  width: 100%;
+  height: 45px;
+  padding: 0 15px;
+  font-size: 14px;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  appearance: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+}
+
+.mesh-tavily-input.tavily-hidden {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  height: 0px;
+}
+
+.mesh-tavily-input:not(.tavily-hidden) {
+  margin-top: 20px;
+  transform: translateX(0);
+  opacity: 1;
+}
+
 .mesh-provider-select:focus,
 .mesh-input-source-select:focus,
 .mesh-tavily-input:focus,
@@ -102,10 +132,6 @@
   border-color: var(--interactive-accent);
   box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.2);
   outline: none;
-}
-
-.mesh-tavily-input{
-  margin-top: 20px;
 }
 
 .mesh-submit-button:hover {
@@ -151,10 +177,9 @@
 .selected-patterns-container {
   margin-top: 12px;
   margin-bottom: 20px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border: none;
   padding: 10px;
-  background-color: var(--background-primary);
+  background-color: transparent;
 }
 
 .mesh-loading {
@@ -223,7 +248,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--background-primary);
   transition: .4s;
 }
 
@@ -234,12 +259,12 @@
   width: 16px;
   left: 2px;
   bottom: 2px;
-  background-color: white;
+  background-color: var(--interactive-accent);
   transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: var(--interactive-accent);
+  background-color: var(--background-modifier-border);
 }
 
 input:checked + .slider:before {
@@ -322,11 +347,11 @@ input:checked + .slider:before {
 }
 
 .rotating {
-  animation: rotate 2s ease-in-out infinite;
+  animation: rotate 2s ease-in-out infinite;  
 }
 
 .mesh-card {
-  transition: all 0.5s ease;
+  transition: all 0.8s ease;
   transform-style: preserve-3d;
 }
 
@@ -416,10 +441,6 @@ input:checked + .slider:before {
   background: var(--background-primary);
 }
 
-.hidden {
-  display: none;
-}
-
 .loading {
   position: relative;
   pointer-events: none;
@@ -451,5 +472,65 @@ input:checked + .slider:before {
 }
 
 .rotating {
-  animation: rotate 2s linear infinite;
+  animation: rotate 2s ease-out .05s infinite;
+}
+
+.input-toggle-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  width: 75%;
+  margin: 0 auto;
+  background-color: var(--background-primary);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.input-toggle-label {
+  flex: 1;
+  text-align: center;
+  z-index: 1;
+}
+
+.input-toggle-input {
+  display: none;
+}
+
+.input-toggle-text {
+  display: block;
+  padding: 10px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.input-toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 33.33%;
+  height: 100%;
+  background-color: var(--interactive-accent);
+  border-radius: 0px;
+  transition: transform 0.3s ease !important;
+}
+
+.input-toggle-input:checked + .input-toggle-text {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.pattern-search-input {
+  width: 100%;
+}
+
+.input-toggle-slider[data-position="0"] {
+  transform: translateX(0) !important;
+}
+
+.input-toggle-slider[data-position="1"] {
+  transform: translateX(100%) !important;
+}
+
+.input-toggle-slider[data-position="2"] {
+  transform: translateX(200%) !important;
 }
