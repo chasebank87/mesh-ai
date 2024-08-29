@@ -20,6 +20,8 @@ export class YouTubeSelectionModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
+    contentEl.addClass('mesh-modal');
+
     contentEl.createEl('h2', { text: 'YouTube Links Detected' });
 
     const dropdown = contentEl.createEl('select');

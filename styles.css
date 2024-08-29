@@ -34,7 +34,7 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
-  transition: transform 0.5 ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease !important;
   overflow: visible;
   background-color: var(--background-secondary);
 }
@@ -122,6 +122,7 @@
 
 .tavily-search-container {
   overflow: hidden;
+  height: fit-content;
 }
 
 .mesh-tavily-input {
@@ -156,7 +157,7 @@
   transform: translateX(-100%);
   opacity: 0;
   pointer-events: none;
-  height: 0px;
+  height: 0px !important;
 }
 
 .mesh-tavily-input:not(.tavily-hidden) {
@@ -189,7 +190,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  width: 98%;
+  width: 90%;
   max-height: 200px;
   overflow-y: auto;
   background-color: var(--background-primary);
@@ -199,7 +200,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   display: none;
-  margin-left: 1%;
+  margin-left: 5%;
 }
 
 .pattern-results:not(:empty) {
@@ -222,6 +223,7 @@
   border: none;
   padding: 10px;
   background-color: transparent;
+  transition: slide 0.3s ease;
 }
 
 .selected-pattern {
@@ -862,7 +864,7 @@ input:checked + .slider:before {
 
 .mesh-tavily-input {
   width: 100% !important;
-  height: 50px !important;
+  height: 40px !important;
   padding: 0 50px 0 20px !important;
   font-size: 16px !important;
   color: var(--text-normal) !important;
@@ -875,6 +877,39 @@ input:checked + .slider:before {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
   outline: none !important;
 }
+
+.pattern-search-input {
+  width: 100% !important;
+  height: 40px !important;
+  padding: 0 50px 0 20px !important;
+  font-size: 16px !important;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary) !important;
+  border: 2px solid var(--interactive-accent) !important;
+  border-radius: 25px !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+.mesh-output-filename-input {
+  width: 100% !important;
+  height: 40px !important;
+  padding: 0 50px 0 20px !important;
+  font-size: 16px !important;
+  color: var(--text-normal) !important;
+  background-color: var(--background-primary) !important;
+  border: 2px solid var(--interactive-accent) !important;
+  border-radius: 25px !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
 
 .mesh-tavily-input:focus {
   box-shadow: 0 0 0 3px var(--interactive-accent-hover) !important;

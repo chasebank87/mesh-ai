@@ -1,6 +1,6 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, TFolder, TextComponent } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, TFile, TFolder, TextComponent, EventRef } from 'obsidian';
 import MeshAIPlugin from '../main';
-import { PluginSettings, ProviderName } from '../types';
+import { PluginSettings, ProviderName, SearchProviderName } from '../types';
 import { YouTubeSelectionModal } from '../modals/YouTubeSelectionModal';
 import { handleLLMRequest } from '../utils/LLMUtils';
 import { searchPatterns, createSelectedPatternElement, getPatternContent, onPatternSearch, onPatternSelect, updateSelectedPatternsDisplay } from '../utils/PatternUtils';
@@ -48,6 +48,14 @@ export class MeshView extends ItemView {
     container.empty();
     container.addClass('mesh-view-container');
 
+    // Register layout change event
+    this.registerEvent(
+      this.app.workspace.on('layout-change', this.onLayoutChange.bind(this))
+    );
+    this.registerEvent(
+      this.app.workspace.on('resize', this.onLayoutChange.bind(this))
+    );
+
     // Create particles container
     const particlesContainer = container.createEl('div', { cls: 'particles-js', attr: { id: 'particles-js' } });
 
@@ -81,7 +89,7 @@ export class MeshView extends ItemView {
     });
     
     // Input source selection card
-    const inputCard = this.createCard(formContainer, 'Input Source');
+    const inputCard = this.createCard(formContainer, 'Input');
 
     // Create a container for the toggle switch
     const toggleContainer = inputCard.createEl('div', { cls: 'input-toggle-container' });
@@ -90,7 +98,7 @@ export class MeshView extends ItemView {
     const slider = toggleContainer.createEl('div', { cls: 'input-toggle-slider' });
 
     // Create radio buttons for the toggle switch
-    const options = ['active-note', 'clipboard', 'tavily'];
+    const options = ['active-note', 'clipboard', this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily'];
     options.forEach((option, index) => {
         const label = toggleContainer.createEl('label', { cls: 'input-toggle-label' });
         const input = label.createEl('input', {
@@ -107,7 +115,11 @@ export class MeshView extends ItemView {
             input.checked = true;
         }
 
-        label.createEl('span', { text: option.charAt(0).toUpperCase() + option.slice(1), cls: 'input-toggle-text' });
+        label.createEl('span', { 
+          text: option === 'perplexity' ? 'Perplexity' : option.charAt(0).toUpperCase() + option.slice(1), 
+          cls: 'input-toggle-text' 
+        });
+  
 
         // Add event listener to handle changes
         input.addEventListener('change', () => {
@@ -116,14 +128,15 @@ export class MeshView extends ItemView {
     });
 
     // Tavily search input
-    const tavilySearchContainer = inputCard.createEl('div', { cls: 'tavily-search-container' });
-    const tavilySearchInput = tavilySearchContainer.createEl('input', { 
-        attr: {
-            type: 'text', 
-            placeholder: 'Enter Tavily search query'
-        },
-        cls: 'mesh-tavily-input tavily-hidden'
+    const searchContainer = inputCard.createEl('div', { cls: 'tavily-search-container' });
+    const searchInput = searchContainer.createEl('input', { 
+      attr: {
+          type: 'text', 
+          placeholder: this.plugin.settings.usePerplexity ? 'Enter Perplexity search query' : 'Enter Tavily search query'
+      },
+      cls: 'mesh-tavily-input tavily-hidden'
     });
+    
 
     // Patterns card (combining search and selected patterns)
     const patternCard = this.createCard(formContainer, 'patterns');
@@ -258,6 +271,8 @@ export class MeshView extends ItemView {
         }
       });
       resizeObserver.observe(container);
+    } else {
+      debugLog(this.plugin, 'particlesJS not found');
     }
   }
   
@@ -285,10 +300,10 @@ export class MeshView extends ItemView {
     debugLog(this.plugin, "onSubmit method called");
     const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
     const selectedInputSource = this.containerEl.querySelector('input[name="input-source"]:checked') as HTMLInputElement;
-    const tavilySearchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
+    const searchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
 
     const selectedProvider = providerSelect.value as ProviderName;
-    const selectedSource = selectedInputSource ? selectedInputSource.value : 'active-note'; // Default to 'active-note' if nothing is selected
+    const selectedSource = selectedInputSource ? selectedInputSource.value : 'active-note';
     const selectedPatterns = this.selectedPatterns;
 
     try {
@@ -304,7 +319,14 @@ export class MeshView extends ItemView {
         this.startRotating(this.inputCard);
         await new Promise((resolve) => setTimeout(resolve, 2000));
         debugLog(this.plugin, "Getting input content...");
-        const input = await getInputContent(this.app, this.plugin, selectedSource, tavilySearchInput);
+        let input: string;
+
+        // Check if the selected source is a search provider
+        if (selectedSource === 'tavily' || selectedSource === 'perplexity') {
+            input = await this.getSearchProviderContent(selectedSource as SearchProviderName, searchInput.value);
+        } else {
+            input = await getInputContent(this.app, this.plugin, selectedSource, searchInput);
+        }
         this.stopRotating(this.inputCard);
 
         // Pattern processing
@@ -332,6 +354,16 @@ export class MeshView extends ItemView {
     } finally {
         this.hideLoading();
     }
+  }
+
+  private async getSearchProviderContent(providerName: SearchProviderName, query: string): Promise<string> {
+      const provider = this.plugin.getSearchProvider(providerName);
+      
+      if ('search' in provider) {
+          return await provider.search(query);
+      } else {
+          throw new Error(`Provider ${providerName} does not support search method`);
+      }
   }
 
   private async showLoading() {
@@ -381,17 +413,20 @@ export class MeshView extends ItemView {
   }
 
   private handleInputSourceChange(selectedSource: string, index: number) {
-    const tavilySearchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
+    const searchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
     const slider = this.containerEl.querySelector('.input-toggle-slider') as HTMLElement;
 
     // Update slider position using data attribute
     slider.setAttribute('data-position', index.toString());
 
-    // Handle the Tavily input visibility
-    if (selectedSource === 'tavily') {
-        tavilySearchInput.classList.remove('tavily-hidden');
+    // Handle the search input visibility and placeholder
+    if (selectedSource === 'tavily' || selectedSource === 'perplexity') {
+        searchInput.classList.remove('tavily-hidden');
+        searchInput.placeholder = this.plugin.settings.usePerplexity 
+            ? 'Enter Perplexity search query' 
+            : 'Enter Tavily search query';
     } else {
-        tavilySearchInput.classList.add('tavily-hidden');
+        searchInput.classList.add('tavily-hidden');
     }
   }
 
@@ -459,5 +494,10 @@ export class MeshView extends ItemView {
         this.currentSelectedIndex = -1;
       }
     );
+  }
+
+  private onLayoutChange() {
+    // Reinitialize particles
+    this.initParticles();
   }
 }

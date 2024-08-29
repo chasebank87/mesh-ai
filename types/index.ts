@@ -1,4 +1,5 @@
 type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama';
+type SearchProviderName = 'tavily' | 'perplexity';
 
 type ProviderApiKeys = {
   [K in Exclude<ProviderName, 'ollama'>]: string;
@@ -22,6 +23,8 @@ interface PluginSettings {
   anthropicApiKey: string;
   grocqApiKey: string;
   tavilyApiKey: string;
+  usePerplexity: boolean;
+  perplexityApiKey: string;
   youtubeApiKey: string;
   ollamaServerUrl: string;
   microsoftEndpointUrl: string;
@@ -43,6 +46,8 @@ const DEFAULT_SETTINGS: PluginSettings = {
   anthropicApiKey: '',
   grocqApiKey: '',
   tavilyApiKey: '',
+  usePerplexity: false,
+  perplexityApiKey: '',
   youtubeApiKey: '',
   ollamaServerUrl: 'http://localhost:11434',
   microsoftEndpointUrl: '',
@@ -124,6 +129,7 @@ interface Workflow {
 
 // At the bottom of the file, modify your exports:
 export type {
+  SearchProviderName,
   ProviderName,
   ProviderApiKeys,
   ProviderModels,

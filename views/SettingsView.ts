@@ -90,6 +90,38 @@ export class SettingsView extends PluginSettingTab {
     }
     
     new Setting(containerEl)
+    .setName('Use Perplexity')
+    .setDesc('Enable Perplexity integration (disables Tavily)')
+    .addToggle(toggle => toggle
+      .setValue(this.plugin.settings.usePerplexity)
+      .onChange(async (value) => {
+        this.plugin.settings.usePerplexity = value;
+        await this.plugin.saveSettings();
+        this.display(); // Refresh the settings view
+      }));
+      const perplexityNote = containerEl.createEl('div', {
+        cls: 'setting-item-description',
+        text: 'Note: Currently, the Perplexity API does not support returning citations or images as these features are in closed beta. Additionally, the Perplexity API is a paid feature. After enabling Perplexity close and reopen the plugin for the change to take effect.'
+      });
+      perplexityNote.style.marginTop = '10px';
+      perplexityNote.style.marginBottom = '20px';
+      perplexityNote.style.color = 'var(--text-muted)';
+    
+
+  if (this.plugin.settings.usePerplexity) {
+    new Setting(containerEl)
+      .setName('Perplexity API Key')
+      .setDesc('Enter your Perplexity API key')
+      .addText(text => text
+        .setPlaceholder('Enter API key')
+        .setValue(this.plugin.settings.perplexityApiKey)
+        .onChange(async (value) => {
+          this.plugin.settings.perplexityApiKey = value;
+          await this.plugin.saveSettings();
+        }));
+  } else {
+    // Tavily API key setting (only show if Perplexity is not enabled)
+    new Setting(containerEl)
       .setName('Tavily API key')
       .setDesc('Enter your Tavily API key')
       .addText(text => text
@@ -99,6 +131,8 @@ export class SettingsView extends PluginSettingTab {
           this.plugin.settings.tavilyApiKey = value;
           await this.plugin.saveSettings();
         }));
+  }
+
     
     new Setting(containerEl)
     .setName('YouTube API key')

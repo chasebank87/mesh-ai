@@ -79,8 +79,8 @@ export async function processStitchedPatterns(plugin: MeshAIPlugin, provider: Pr
     const prompt = FULL_PROMPT_TEMPLATE
       .replace('{patternContents}', sanitizedPatternContent)
       .replace('{input}', input);
-    const response = await handleLLMRequest(plugin, provider, prompt);
-    stitchedContent += `# ${pattern}\n\n---\n\n${response}\n\n\n`;
+      const response = await handleLLMRequest(plugin, provider, input);
+      stitchedContent += `# ${pattern}\n\n---\n\n${response}\n\n\n`;
   }
   return stitchedContent;
 }

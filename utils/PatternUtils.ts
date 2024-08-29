@@ -168,3 +168,4 @@ export function createSelectedPatternElement(pattern: string, onRemove: (pattern
   
   return patternEl;
 }
+

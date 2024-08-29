@@ -1,7 +1,7 @@
 import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice } from 'obsidian';
 import { MeshView, MESH_VIEW_TYPE } from './views/MeshView';
 import { SettingsView } from './views/SettingsView';
-import { PluginSettings, DEFAULT_SETTINGS, ProviderName, Workflow } from './types';
+import { PluginSettings, DEFAULT_SETTINGS, ProviderName, Workflow, GitHubApiItem , SearchProviderName } from './types';
 import { OpenAIProvider } from './providers/OpenAIProvider';
 import { GoogleProvider } from './providers/GoogleProvider';
 import { MicrosoftProvider } from './providers/MicrosoftProvider';
@@ -11,18 +11,19 @@ import { OllamaProvider } from './providers/OllamaProvider';
 import { YoutubeProvider } from './providers/YoutubeProvider';
 import { TavilyProvider } from './providers/TavilyProvider';
 import { debugLog } from './utils/MeshUtils';
-import { GitHubApiItem } from './types';
 import { ProcessActiveNoteModal } from './modals/ProcessActiveNoteModal';
 import { ProcessClipboardModal } from 'modals/ProcessClipboardModal';
 import { TavilySearchModal } from 'modals/TavilySearchModal';
 import { processWorkflow } from './utils/WorkflowUtils';
 import { createOutputFile } from './utils/FileUtils';
 import { processPatterns, processStitchedPatterns } from './utils/MeshUtils';
+import { PerplexityProvider } from 'providers/PerplexityProvider';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
   youtubeProvider: YoutubeProvider;
   tavilyProvider: TavilyProvider;
+  perplexityProvider: PerplexityProvider;
   
   async onload() {
     await this.loadSettings();
@@ -289,6 +290,17 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
         return new OllamaProvider(this.settings.ollamaServerUrl, this);
       default:
         throw new Error(`Unknown provider: ${providerName}`);
+    }
+  }
+
+  getSearchProvider(providerName: SearchProviderName) {
+    switch (providerName) {
+      case 'tavily':
+        return new TavilyProvider(this.settings.tavilyApiKey, this);
+      case 'perplexity':
+        return new PerplexityProvider(this.settings.perplexityApiKey, this);
+      default:
+        throw new Error(`Unsupported search provider: ${providerName}`);
     }
   }
 
