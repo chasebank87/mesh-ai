@@ -1,84 +1,85 @@
-import { BaseAPIHelper } from './BaseAPIHelper';
-import { debugLog } from './MeshUtils';
+import { requestUrl, RequestUrlParam } from 'obsidian';
 import MeshAIPlugin from '../main';
+import { debugLog } from './MeshUtils';
 
-export class CloudAPIHelper extends BaseAPIHelper {
+export class CloudAPIHelper {
+  private baseUrl: string;
+  private headers: Record<string, string>;
   private plugin: MeshAIPlugin;
 
   constructor(baseUrl: string, headers: Record<string, string>, plugin: MeshAIPlugin) {
-    super(baseUrl, headers);
+    this.baseUrl = baseUrl;
+    this.headers = headers;
     this.plugin = plugin;
   }
 
   async get(endpoint: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'GET',
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
+    return this.request(endpoint, 'GET');
   }
   
   async post(endpoint: string, data: any, rawResponse: boolean = false): Promise<any> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data)
-    });
+    return this.request(endpoint, 'POST', data, rawResponse);
+  }
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+  private async request(endpoint: string, method: string, data?: any, rawResponse: boolean = false): Promise<any> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const requestParams: RequestUrlParam = {
+      url,
+      method,
+      headers: this.headers,
+      contentType: 'application/json',
+    };
+
+    if (data) {
+      requestParams.body = JSON.stringify(data);
     }
 
-    if (rawResponse) {
-      return response;
-    } else {
-      return await response.json();
+    try {
+      const response = await requestUrl(requestParams);
+      if (rawResponse) {
+        return response;
+      } else {
+        return response.json;
+      }
+    } catch (error) {
+      debugLog(this.plugin, `HTTP error! status: ${error.status}`);
+      throw new Error(`HTTP error! status: ${error.status}`);
     }
   }
 
   async postStream(endpoint: string, data: any, onChunk: (chunk: any) => void) {
-    const response = await this.fetchWithErrorHandling(`${this.baseUrl}${endpoint}`, {
+    const url = `${this.baseUrl}${endpoint}`;
+    const requestParams: RequestUrlParam = {
+      url,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...this.headers
       },
-      body: JSON.stringify(data)
-    });
+      body: JSON.stringify(data),
+    };
 
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
+    try {
+      const response = await requestUrl(requestParams);
+      const arrayBuffer = await response.arrayBuffer;
+      const text = new TextDecoder().decode(arrayBuffer);
+      const lines = text.split('\n').filter(line => line.trim() !== '');
 
-    if (reader) {
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n').filter(line => line.trim() !== '');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const jsonData = line.slice(6);
-              if (jsonData === '[DONE]') break;
-              try {
-                const parsedData = JSON.parse(jsonData);
-                onChunk(parsedData);
-              } catch (error) {
-                debugLog(this.plugin, `Error parsing JSON: ${error}`);
-              }
-            }
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const jsonData = line.slice(6);
+          if (jsonData === '[DONE]') break;
+          try {
+            const parsedData = JSON.parse(jsonData);
+            onChunk(parsedData);
+          } catch (error) {
+            debugLog(this.plugin, `Error parsing JSON: ${error}`);
           }
         }
-      } finally {
-        reader.releaseLock();
       }
+    } catch (error) {
+      debugLog(this.plugin, `Error in postStream: ${error}`);
+      throw error;
     }
   }
 }

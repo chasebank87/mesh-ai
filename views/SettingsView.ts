@@ -218,7 +218,7 @@ export class SettingsView extends PluginSettingTab {
     
     // Add the debug enable setting
     new Setting(containerEl)
-    .setName('Enable Debugging')
+    .setName('Enable debugging')
     .setDesc('Turn on console logging for debugging purposes')
     .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableDebugging)

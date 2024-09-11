@@ -18,7 +18,7 @@ export async function updatePatternList(plugin: MeshAIPlugin, patternSelect: HTM
     // Add an option group for custom patterns
     if (customPatterns.length > 0) {
       const customGroup = patternSelect.createEl('optgroup', {
-        attr: { label: 'Custom Patterns' }
+        attr: { label: 'Custom patterns' }
       } as DomElementInfo);
       customPatterns.forEach(pattern => {
         customGroup.createEl('option', { value: pattern, text: pattern });
