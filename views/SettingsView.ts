@@ -2,9 +2,11 @@ import { App, PluginSettingTab, Setting, DropdownComponent, ButtonComponent, Not
 import { PluginSettings, ProviderName } from '../types';
 import MeshAIPlugin from '../main';
 import { debugLog } from '../utils/MeshUtils';
+import { MeshView } from './MeshView';
 
 export class SettingsView extends PluginSettingTab {
   plugin: MeshAIPlugin;
+  workflowContainer: HTMLElement;
 
   constructor(app: App, plugin: MeshAIPlugin) {
     super(app, plugin);
@@ -29,6 +31,28 @@ export class SettingsView extends PluginSettingTab {
               this.plugin.settings.ollamaServerUrl = value;
               await this.plugin.saveSettings();
             }));
+      } else if (provider === 'microsoft') {
+        new Setting(containerEl)
+          .setName('Microsoft Azure API key')
+          .setDesc('Enter your Microsoft Azure API key')
+          .addText(text => text
+            .setPlaceholder('Enter API key')
+            .setValue(this.plugin.settings.microsoftApiKey)
+            .onChange(async (value) => {
+              this.plugin.settings.microsoftApiKey = value;
+              await this.plugin.saveSettings();
+            }));
+    
+        new Setting(containerEl)
+          .setName('Microsoft Azure Endpoint URL')
+          .setDesc('Enter your Microsoft Azure Endpoint URL')
+          .addText(text => text
+            .setPlaceholder('Enter Endpoint URL')
+            .setValue(this.plugin.settings.microsoftEndpointUrl || '')
+            .onChange(async (value) => {
+              this.plugin.settings.microsoftEndpointUrl = value;
+              await this.plugin.saveSettings();
+            }));
       } else {
         new Setting(containerEl)
           .setName(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API key`)
@@ -41,9 +65,11 @@ export class SettingsView extends PluginSettingTab {
               await this.plugin.saveSettings();
             }));
       }
-
+    
       // Add model selection for each provider only if there's an API key or server URL
-      const apiKey = provider === 'ollama' ? this.plugin.settings.ollamaServerUrl : this.plugin.settings[`${provider}ApiKey`];
+      const apiKey = provider === 'ollama' ? this.plugin.settings.ollamaServerUrl : 
+                     (provider === 'microsoft' ? this.plugin.settings.microsoftApiKey : 
+                     this.plugin.settings[`${provider}ApiKey`]);
       if (apiKey) {
         const modelSetting = new Setting(containerEl)
           .setName(`${provider.charAt(0).toUpperCase() + provider.slice(1)} model`)
@@ -51,7 +77,7 @@ export class SettingsView extends PluginSettingTab {
           .addDropdown(async (dropdown: DropdownComponent) => {
             await this.populateModelDropdown(dropdown, provider);
           });
-
+    
         modelSetting.addButton((button: ButtonComponent) => {
           button
             .setButtonText('Refresh models')
@@ -62,25 +88,39 @@ export class SettingsView extends PluginSettingTab {
         });
       }
     }
-
-    // Add setting for selected provider
-    new Setting(containerEl)
-      .setName('Selected provider')
-      .setDesc('Choose the default provider')
-      .addDropdown(dropdown => {
-        providers.forEach(provider => {
-          const apiKey = provider === 'ollama' ? this.plugin.settings.ollamaServerUrl : this.plugin.settings[`${provider}ApiKey`];
-          if (apiKey) {
-            dropdown.addOption(provider, provider);
-          }
-        });
-        dropdown.setValue(this.plugin.settings.selectedProvider)
-          .onChange(async (value: ProviderName) => {
-            this.plugin.settings.selectedProvider = value;
-            await this.plugin.saveSettings();
-          });
-      });
     
+    new Setting(containerEl)
+    .setName('Use Perplexity')
+    .setDesc('Enable Perplexity integration (disables Tavily)')
+    .addToggle(toggle => toggle
+      .setValue(this.plugin.settings.usePerplexity)
+      .onChange(async (value) => {
+        this.plugin.settings.usePerplexity = value;
+        await this.plugin.saveSettings();
+        this.display(); // Refresh the settings view
+      }));
+      const perplexityNote = containerEl.createEl('div', {
+        cls: 'setting-item-description',
+        text: 'Note: Currently, the Perplexity API does not support returning citations or images as these features are in closed beta. Additionally, the Perplexity API is a paid feature. After enabling Perplexity close and reopen the plugin for the change to take effect.'
+      });
+      perplexityNote.style.marginTop = '10px';
+      perplexityNote.style.marginBottom = '20px';
+      perplexityNote.style.color = 'var(--text-muted)';
+    
+
+  if (this.plugin.settings.usePerplexity) {
+    new Setting(containerEl)
+      .setName('Perplexity API Key')
+      .setDesc('Enter your Perplexity API key')
+      .addText(text => text
+        .setPlaceholder('Enter API key')
+        .setValue(this.plugin.settings.perplexityApiKey)
+        .onChange(async (value) => {
+          this.plugin.settings.perplexityApiKey = value;
+          await this.plugin.saveSettings();
+        }));
+  } else {
+    // Tavily API key setting (only show if Perplexity is not enabled)
     new Setting(containerEl)
       .setName('Tavily API key')
       .setDesc('Enter your Tavily API key')
@@ -91,6 +131,8 @@ export class SettingsView extends PluginSettingTab {
           this.plugin.settings.tavilyApiKey = value;
           await this.plugin.saveSettings();
         }));
+  }
+
     
     new Setting(containerEl)
     .setName('YouTube API key')
@@ -163,6 +205,17 @@ export class SettingsView extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
     
+    // Workflows section
+    this.containerEl.createEl('h2', { text: 'Workflows' });
+    this.workflowContainer = this.containerEl.createEl('div');
+    this.displayWorkflows();
+
+    new Setting(this.containerEl)
+        .setName('Add Workflow')
+        .addButton(button => button
+            .setButtonText('Add')
+            .onClick(() => this.addWorkflow()));
+    
     // Add the debug enable setting
     new Setting(containerEl)
     .setName('Enable debugging')
@@ -175,44 +228,114 @@ export class SettingsView extends PluginSettingTab {
             new Notice(`Debugging ${status}.`);
             await this.plugin.saveSettings();
         }));
-  }
+}
 
-  async populateModelDropdown(dropdown: DropdownComponent, provider: ProviderName, forceRefresh: boolean = false) {
-    dropdown.selectEl.disabled = true;
-    try {
-      let models: string[];
-      if (forceRefresh) {
-        models = await this.getModelsForProvider(provider);
-      } else {
-        models = this.plugin.settings.providerModels[provider] || await this.getModelsForProvider(provider);
-      }
-      
-      dropdown.selectEl.empty();
-      if (models && models.length > 0) {
-        models.forEach(model => dropdown.addOption(model, model));
-        
-        // Check if there's a previously selected model
-        const selectedModel = this.plugin.settings.providerModels[provider]?.[0];
-        
-        // If there's a selected model and it's in the list, use it. Otherwise, use the first model in the list.
-        const modelToSelect = models.includes(selectedModel) ? selectedModel : models[0];
-        
-        dropdown.setValue(modelToSelect)
-          .onChange(async (value) => {
-            this.plugin.settings.providerModels[provider] = [value];
-            await this.plugin.saveSettings();
-          });
-      } else {
-        dropdown.addOption('', 'No models available');
-        debugLog(this.plugin, `No models available for ${provider}`);
-      }
-    } catch (error) {
-      debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
-      dropdown.addOption('error', 'Error fetching models');
-    } finally {
-      dropdown.selectEl.disabled = false;
+displayWorkflows() {
+  this.workflowContainer.empty();
+  this.plugin.settings.workflows.forEach((workflow, index) => {
+      const workflowSetting = new Setting(this.workflowContainer)
+          .setName(`Workflow ${index + 1}`)
+          .addText(text => text
+              .setPlaceholder('Workflow name')
+              .setValue(workflow.name)
+              .onChange(async (value) => {
+                  workflow.name = value;
+                  await this.plugin.saveSettings();
+                  this.plugin.createWorkflowCommands();
+              }))
+          .addDropdown(dropdown => {
+              const providers = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama'];
+              providers.forEach(provider => dropdown.addOption(provider, provider));
+              dropdown.setValue(workflow.provider)
+                  .onChange(async (value) => {
+                      workflow.provider = value as ProviderName;
+                      await this.plugin.saveSettings();
+                      this.plugin.createWorkflowCommands();
+                  });
+          })
+          .addText(text => text
+              .setPlaceholder('Pattern names (comma-separated)')
+              .setValue(workflow.patterns.join(', '))
+              .onChange(async (value) => {
+                  workflow.patterns = value.split(',').map(p => p.trim());
+                  await this.plugin.saveSettings();
+                  this.plugin.createWorkflowCommands();
+              }))
+          .addToggle(toggle => toggle
+              .setValue(workflow.usePatternStitching)
+              .setTooltip('Use pattern stitching')
+              .onChange(async (value) => {
+                  workflow.usePatternStitching = value;
+                  await this.plugin.saveSettings();
+              }))
+          .addButton(button => button
+              .setButtonText('Delete')
+              .onClick(async () => {
+                  this.plugin.settings.workflows.splice(index, 1);
+                  await this.plugin.saveSettings();
+                  this.displayWorkflows();
+                  this.plugin.createWorkflowCommands();
+              }));
+  });
+}
+
+async addWorkflow() {
+  this.plugin.settings.workflows.push({
+      name: 'New Workflow',
+      provider: 'openai',
+      patterns: [],
+      usePatternStitching: false
+  });
+  await this.plugin.saveSettings();
+  this.displayWorkflows();
+  this.plugin.createWorkflowCommands();
+}
+
+async populateModelDropdown(dropdown: DropdownComponent, provider: ProviderName, forceRefresh: boolean = false) {
+  dropdown.selectEl.disabled = true;
+  try {
+    let models: string[];
+    if (forceRefresh) {
+      models = await this.getModelsForProvider(provider);
+      // Update the settings with the new models
+      this.plugin.settings.providerModels[provider] = models;
+      await this.plugin.saveSettings();
+    } else {
+      models = this.plugin.settings.providerModels[provider] || await this.getModelsForProvider(provider);
     }
+    
+    dropdown.selectEl.empty();
+    if (models && models.length > 0) {
+      models.forEach(model => dropdown.addOption(model, model));
+      
+      // Check if there's a previously selected model
+      const selectedModel = this.plugin.settings.providerModels[provider]?.[0];
+      
+      // If there's a selected model and it's in the list, use it. Otherwise, use the first model in the list.
+      const modelToSelect = models.includes(selectedModel) ? selectedModel : models[0];
+      
+      // Set the initial value and save it
+      dropdown.setValue(modelToSelect);
+      this.plugin.settings.providerModels[provider] = [modelToSelect];
+      await this.plugin.saveSettings();
+
+      // Add onChange event listener
+      dropdown.onChange(async (value) => {
+        this.plugin.settings.providerModels[provider] = [value];
+        await this.plugin.saveSettings();
+        debugLog(this.plugin, `Model for ${provider} set to: ${value}`);
+      });
+    } else {
+      dropdown.addOption('', 'No models available');
+      debugLog(this.plugin, `No models available for ${provider}`);
+    }
+  } catch (error) {
+    debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
+    dropdown.addOption('error', 'Error fetching models');
+  } finally {
+    dropdown.selectEl.disabled = false;
   }
+}
 
   async getModelsForProvider(provider: ProviderName): Promise<string[]> {
     try {

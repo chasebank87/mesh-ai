@@ -93,23 +93,34 @@ export async function searchPatterns(plugin: MeshAIPlugin, query: string, limit:
   return Fuzzysort.go(query, allPatterns, { limit });
 }
 
-export async function onPatternSearch(plugin: MeshAIPlugin, query: string, resultsContainer: HTMLElement, onSelect: (pattern: string) => void) {
+export async function onPatternSearch(
+  plugin: MeshAIPlugin, 
+  query: string, 
+  resultsContainer: HTMLElement, 
+  onSelect: (pattern: string) => void,
+  onResultsUpdated: (resultElements: HTMLElement[]) => void
+) {
   resultsContainer.empty();
   if (query.length === 0) {
     resultsContainer.addClass('hidden');
+    onResultsUpdated([]);
     return;
   }
 
   const results = await searchPatterns(plugin, query);
 
   if (results.length > 0) {
-    results.forEach(result => {
+    const resultElements: HTMLElement[] = [];
+    results.forEach((result, index) => {
       const el = resultsContainer.createEl('div', { text: result.target, cls: 'pattern-result' });
       el.addEventListener('click', () => onSelect(result.target));
+      resultElements.push(el);
     });
     resultsContainer.removeClass('hidden');
+    onResultsUpdated(resultElements);
   } else {
     resultsContainer.addClass('hidden');
+    onResultsUpdated([]);
   }
 }
 
@@ -129,6 +140,7 @@ export function onPatternSelect(
 }
 
 export function updateSelectedPatternsDisplay(
+  title: HTMLElement,
   container: HTMLElement,
   selectedPatterns: string[],
   setSelectedPatterns: (patterns: string[]) => void
@@ -137,10 +149,12 @@ export function updateSelectedPatternsDisplay(
   selectedPatterns.forEach(pattern => {
     const patternEl = createSelectedPatternElement(pattern, (removedPattern) => {
       const updatedPatterns = selectedPatterns.filter(p => p !== removedPattern);
+      title.addClass('hidden');
       setSelectedPatterns(updatedPatterns);
-      updateSelectedPatternsDisplay(container, updatedPatterns, setSelectedPatterns);
+      updateSelectedPatternsDisplay(title, container, updatedPatterns, setSelectedPatterns);
     });
     container.appendChild(patternEl);
+    title.removeClass('hidden');
   });
 }
 
@@ -154,3 +168,4 @@ export function createSelectedPatternElement(pattern: string, onRemove: (pattern
   
   return patternEl;
 }
+
