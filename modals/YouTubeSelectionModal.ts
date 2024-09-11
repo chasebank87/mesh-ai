@@ -20,7 +20,7 @@ export class YouTubeSelectionModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl('h2', { text: 'YouTube Links Detected' });
+    contentEl.createEl('h2', { text: 'YouTube links detected' });
 
     const dropdown = contentEl.createEl('select');
     this.youtubeLinks.forEach(link => {

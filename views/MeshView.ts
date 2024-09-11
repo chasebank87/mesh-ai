@@ -94,7 +94,7 @@ export class MeshView extends ItemView {
     this.patternResults = patternSearchContainer.createEl('div', { cls: 'pattern-results' });
 
     // Selected patterns
-    const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected Patterns', cls: 'mesh-selected-patterns-title' });
+    const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected patterns', cls: 'mesh-selected-patterns-title' });
     this.selectedPatternsContainer = patternCard.createEl('div', { cls: 'selected-patterns-container' });
 
     // Add pattern stitching toggle at the bottom left
@@ -106,7 +106,7 @@ export class MeshView extends ItemView {
     });
     stitchingInput.checked = this.patternStitchingEnabled; // Set the initial state
     stitchingToggle.createEl('span', { cls: 'slider round' });
-    const stitchingLabel = stitchingContainer.createEl('span', { text: 'Pattern Stitching', cls: 'pattern-stitching-label' });
+    const stitchingLabel = stitchingContainer.createEl('span', { text: 'Pattern stitching', cls: 'pattern-stitching-label' });
 
     // Add event listener for the toggle
     stitchingInput.addEventListener('change', (e) => {

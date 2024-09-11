@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice } from 'obsidian';
+import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice, normalizePath } from 'obsidian';
 import { MeshView, MESH_VIEW_TYPE } from './views/MeshView';
 import { SettingsView } from './views/SettingsView';
 import { PluginSettings, DEFAULT_SETTINGS, ProviderName } from './types';
@@ -98,9 +98,10 @@ export default class MeshAIPlugin extends Plugin {
   }
 
   async loadFabricPatterns(): Promise<string[]> {
-    const folder = this.app.vault.getAbstractFileByPath(this.settings.fabricPatternsFolder);
+    const normalizedPath = normalizePath(this.settings.fabricPatternsFolder);
+    const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
     const patterns: string[] = [];
-  
+
     if (folder instanceof TFolder) {
       for (const file of folder.children) {
         if (file instanceof TFile && file.extension === 'md') {
@@ -108,7 +109,7 @@ export default class MeshAIPlugin extends Plugin {
         }
       }
     }
-  
+
     return patterns.sort();
   }
 
@@ -118,9 +119,10 @@ export default class MeshAIPlugin extends Plugin {
     
     try {
       // Ensure the Fabric Patterns folder exists
-      const fabricPatternsFolder = this.app.vault.getAbstractFileByPath(this.settings.fabricPatternsFolder);
+      const normalizedFolderPath = normalizePath(this.settings.fabricPatternsFolder);
+      const fabricPatternsFolder = this.app.vault.getAbstractFileByPath(normalizedFolderPath);
       if (!(fabricPatternsFolder instanceof TFolder)) {
-        await this.app.vault.createFolder(this.settings.fabricPatternsFolder);
+        await this.app.vault.createFolder(normalizedFolderPath);
       }
   
       // Fetch the list of folders in the patterns directory
@@ -135,7 +137,7 @@ export default class MeshAIPlugin extends Plugin {
         try {
           const fileName = `${folder.name}.md`;
           const fileUrl = `${baseRawUrl}/${folder.name}/system.md`;
-          const filePath = `${this.settings.fabricPatternsFolder}/${fileName}`;
+          const filePath = normalizePath(`${this.settings.fabricPatternsFolder}/${fileName}`);
   
           // Fetch the content of the system.md file
           const fileContent = await requestUrl({ url: fileUrl });
