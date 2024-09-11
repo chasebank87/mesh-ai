@@ -41,4 +41,5 @@ esbuild.build({
     treeShaking: true,
     outfile: "main.js",
     minify: prod,
+    inject: ['./node_modules/particles.js/particles.js'],
 }).catch(() => process.exit(1));

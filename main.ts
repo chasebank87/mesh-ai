@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice } from 'obsidian';
+import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice, normalizePath } from 'obsidian';
 import { MeshView, MESH_VIEW_TYPE } from './views/MeshView';
 import { SettingsView } from './views/SettingsView';
 import { PluginSettings, DEFAULT_SETTINGS, ProviderName, Workflow, GitHubApiItem , SearchProviderName } from './types';
@@ -126,10 +126,13 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
 
   async loadParticlesJS() {
     return new Promise<void>((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
-      script.onload = () => resolve();
-      document.head.appendChild(script);
+      if (typeof (window as any).particlesJS === 'function') {
+        console.log('particlesJS loaded successfully');
+        resolve();
+      } else {
+        console.error('particlesJS is not available');
+        resolve();
+      }
     });
   }
 
@@ -144,8 +147,6 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
   async activateView() {
     const { workspace } = this.app;
     
-    workspace.detachLeavesOfType(MESH_VIEW_TYPE);
-    
     let leaf = workspace.getLeavesOfType(MESH_VIEW_TYPE)[0];
     
     if (!leaf) {
@@ -154,8 +155,8 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
         await rightLeaf.setViewState({ type: MESH_VIEW_TYPE, active: true });
         leaf = rightLeaf;
       } else {
-        debugLog(this, 'Failed to create a new leaf for Mesh AI view');
-        return;
+        leaf = workspace.getLeaf('split', 'vertical');
+        await leaf.setViewState({ type: MESH_VIEW_TYPE, active: true });
       }
     }
     
@@ -185,9 +186,10 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
   }
 
   async loadFabricPatterns(): Promise<string[]> {
-    const folder = this.app.vault.getAbstractFileByPath(this.settings.fabricPatternsFolder);
+    const normalizedPath = normalizePath(this.settings.fabricPatternsFolder);
+    const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
     const patterns: string[] = [];
-  
+
     if (folder instanceof TFolder) {
       for (const file of folder.children) {
         if (file instanceof TFile && file.extension === 'md') {
@@ -195,7 +197,7 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
         }
       }
     }
-  
+
     return patterns.sort();
   }
 
@@ -205,9 +207,10 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
     
     try {
       // Ensure the Fabric Patterns folder exists
-      const fabricPatternsFolder = this.app.vault.getAbstractFileByPath(this.settings.fabricPatternsFolder);
+      const normalizedFolderPath = normalizePath(this.settings.fabricPatternsFolder);
+      const fabricPatternsFolder = this.app.vault.getAbstractFileByPath(normalizedFolderPath);
       if (!(fabricPatternsFolder instanceof TFolder)) {
-        await this.app.vault.createFolder(this.settings.fabricPatternsFolder);
+        await this.app.vault.createFolder(normalizedFolderPath);
       }
   
       // Fetch the list of folders in the patterns directory
@@ -222,7 +225,7 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
         try {
           const fileName = `${folder.name}.md`;
           const fileUrl = `${baseRawUrl}/${folder.name}/system.md`;
-          const filePath = `${this.settings.fabricPatternsFolder}/${fileName}`;
+          const filePath = normalizePath(`${this.settings.fabricPatternsFolder}/${fileName}`);
   
           // Fetch the content of the system.md file
           const fileContent = await requestUrl({ url: fileUrl });

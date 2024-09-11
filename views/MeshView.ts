@@ -159,8 +159,9 @@ export class MeshView extends ItemView {
     this.patternInput.inputEl.addEventListener('keydown', this.handlePatternInputKeydown.bind(this));
 
     // Selected patterns
-    const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected Patterns', cls: 'mesh-selected-patterns-title' });
+    const selectedPatternsTitle = patternCard.createEl('h4', { text: 'Selected patterns', cls: 'mesh-selected-patterns-title' });
     selectedPatternsTitle.addClass('hidden');
+
     this.selectedPatternsContainer = patternCard.createEl('div', { cls: 'selected-patterns-container' });
 
     // Add pattern stitching toggle at the bottom left
@@ -172,7 +173,7 @@ export class MeshView extends ItemView {
     });
     stitchingInput.checked = this.patternStitchingEnabled; // Set the initial state
     stitchingToggle.createEl('span', { cls: 'slider round' });
-    const stitchingLabel = stitchingContainer.createEl('span', { text: 'Pattern Stitching', cls: 'pattern-stitching-label' });
+    const stitchingLabel = stitchingContainer.createEl('span', { text: 'Pattern stitching', cls: 'pattern-stitching-label' });
 
     // Add event listener for the toggle
     stitchingInput.addEventListener('change', (e) => {
@@ -201,7 +202,7 @@ export class MeshView extends ItemView {
     this.loadingElement.hide();
 
     // Initialize particles
-    this.initParticles();
+    setTimeout(() => this.initParticles(), 100);
 
     // Add click outside listener
     document.addEventListener('click', this.handleClickOutside);
@@ -215,65 +216,72 @@ export class MeshView extends ItemView {
   
   private initParticles() {
     const container = this.containerEl.children[1] as HTMLElement;
-    const particlesContainer = container.createEl('div', { cls: 'particles-js', attr: { id: 'particles-js' } });
-    
-    // @ts-ignore
-    if (window.particlesJS) {
-      const initParticles = () => {
-        // @ts-ignore
-        window.particlesJS('particles-js', {
-          particles: {
-            number: { value: 80, density: { enable: true, value_area: 800 } },
-            color: { 
-              value: ["#81a0ed", "#694daa"]
-            },
-            shape: { type: "circle" },
-            opacity: { value: 0.5, random: false },
-            size: { value: 3, random: true },
-            line_linked: { 
-              enable: true, 
-              distance: 150, 
-              color: "#81a0ed", 
-              opacity: 0.4, 
-              width: 1 
-            },
-            move: { enable: true, speed: 2, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
-          },
-          interactivity: {
-            detect_on: "canvas",
-            events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
-            modes: { grab: { distance: 400, line_linked: { opacity: 1 } }, bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 }, repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 } }
-          },
-          retina_detect: true
-        });
-      };
-  
-      initParticles();
-  
-      // Reinitialize particles when the window is resized
-      const debouncedResize = this.debounce(() => {
-        // @ts-ignore
-        if (window.pJSDom && window.pJSDom[0] && window.pJSDom[0].pJS) {
-          // @ts-ignore
-          window.pJSDom[0].pJS.fn.vendors.destroypJS();
-        }
-        initParticles();
-      }, 250);
-  
-      window.addEventListener('resize', debouncedResize);
-  
-      // Adjust particle canvas size when the container is resized
-      const resizeObserver = new ResizeObserver(() => {
-        const canvas = particlesContainer.querySelector('canvas');
-        if (canvas) {
-          canvas.width = particlesContainer.clientWidth;
-          canvas.height = particlesContainer.clientHeight;
-        }
-      });
-      resizeObserver.observe(container);
-    } else {
-      debugLog(this.plugin, 'particlesJS not found');
+    let particlesContainer = container.querySelector('#particles-js') as HTMLElement;
+
+    if (!particlesContainer) {
+      particlesContainer = container.createEl('div', { cls: 'particles-js', attr: { id: 'particles-js' } });
     }
+
+    const destroyExistingParticles = () => {
+      if (typeof (window as any).pJSDom !== 'undefined' && (window as any).pJSDom.length > 0) {
+        (window as any).pJSDom[0].pJS.fn.vendors.destroypJS();
+        (window as any).pJSDom = [];
+      }
+    };
+
+    const initParticlesJS = () => {
+      if (typeof (window as any).particlesJS === 'function' && particlesContainer.clientWidth > 0 && particlesContainer.clientHeight > 0) {
+        destroyExistingParticles();
+        try {
+          (window as any).particlesJS('particles-js', {
+            particles: {
+              number: { value: 90, density: { enable: true, value_area: 800 } },
+              color: { value: ["#81a0ed", "#694daa"] },
+              shape: { type: "circle" },
+              opacity: { value: 0.3, random: false },
+              size: { value: 2, random: true },
+              line_linked: { 
+                enable: true, 
+                distance: 150, 
+                color: "#81a0ed", 
+                opacity: 0.2, 
+                width: 1 
+              },
+              move: { enable: true, speed: 1, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+            },
+            interactivity: {
+              detect_on: "canvas",
+              events: { onhover: { enable: false }, onclick: { enable: false }, resize: true },
+            },
+            retina_detect: true
+          });
+        } catch (error) {
+          console.error('Error initializing particles:', error);
+        }
+
+      }
+    };
+
+    // Initialize particles
+    initParticlesJS();
+
+    // Adjust particle canvas size when the container is resized
+    const resizeObserver = new ResizeObserver(this.debounce(() => {
+      const canvas = particlesContainer.querySelector('canvas');
+      if (canvas) {
+        canvas.width = particlesContainer.clientWidth;
+        canvas.height = particlesContainer.clientHeight;
+      }
+      initParticlesJS();
+    }, 200));
+    resizeObserver.observe(container);
+
+    // Clean up function
+    return () => {
+      resizeObserver.disconnect();
+      destroyExistingParticles();
+    };
+
   }
   
   private debounce<T extends (...args: never[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
@@ -499,5 +507,11 @@ export class MeshView extends ItemView {
   private onLayoutChange() {
     // Reinitialize particles
     this.initParticles();
+  }
+
+  async onClose() {
+    const cleanup = this.initParticles();
+    cleanup();
+    document.removeEventListener('click', this.handleClickOutside);
   }
 }

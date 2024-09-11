@@ -157,7 +157,7 @@ export class SettingsView extends PluginSettingTab {
         }));
     
       new Setting(containerEl)
-        .setName('Fabric Patterns Folder')
+        .setName('Fabric patterns folder')
         .setDesc('Folder where downloaded patterns will be saved')
         .addText(text => text
           .setPlaceholder('Enter folder path')
@@ -168,7 +168,7 @@ export class SettingsView extends PluginSettingTab {
           }));
     
       new Setting(containerEl)
-      .setName('Download Patterns')
+      .setName('Download patterns')
       .setDesc('Download patterns from GitHub')
       .addButton((btn: ButtonComponent) => {
         btn.setButtonText('Download')
@@ -218,7 +218,7 @@ export class SettingsView extends PluginSettingTab {
     
     // Add the debug enable setting
     new Setting(containerEl)
-    .setName('Enable Debugging')
+    .setName('Enable debugging')
     .setDesc('Turn on console logging for debugging purposes')
     .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableDebugging)

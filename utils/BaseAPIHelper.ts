@@ -1,3 +1,5 @@
+import { requestUrl, RequestUrlResponse } from 'obsidian';
+
 export class BaseAPIHelper {
   protected baseUrl: string;
   protected headers: Record<string, string>;
@@ -7,9 +9,13 @@ export class BaseAPIHelper {
     this.headers = headers;
   }
 
-  protected async fetchWithErrorHandling(url: string, options: RequestInit): Promise<Response> {
-    const response = await fetch(url, options);
-    if (!response.ok) {
+  protected async fetchWithErrorHandling(url: string, options: any): Promise<RequestUrlResponse> {
+    const response = await requestUrl({
+      url,
+      ...options,
+      throw: false
+    });
+    if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     return response;

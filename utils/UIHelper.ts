@@ -56,7 +56,7 @@ export class UIHelper {
 
   private createProviderSelect(settings: PluginSettings): HTMLSelectElement {
     const selectContainer = this.containerEl.createEl('div', { cls: 'mesh-ai-select-container' });
-    selectContainer.createEl('label', { text: 'Select Provider:', attr: { for: 'mesh-ai-provider' } });
+    selectContainer.createEl('label', { text: 'Select provider:', attr: { for: 'mesh-ai-provider' } });
     
     const select = selectContainer.createEl('select', { cls: 'mesh-ai-select', attr: { id: 'mesh-ai-provider' } });
     
