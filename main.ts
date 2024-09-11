@@ -38,10 +38,13 @@ export default class MeshAIPlugin extends Plugin {
 
   async loadParticlesJS() {
     return new Promise<void>((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
-      script.onload = () => resolve();
-      document.head.appendChild(script);
+      if (typeof (window as any).particlesJS === 'function') {
+        console.log('particlesJS loaded successfully');
+        resolve();
+      } else {
+        console.error('particlesJS is not available');
+        resolve();
+      }
     });
   }
 
@@ -56,8 +59,6 @@ export default class MeshAIPlugin extends Plugin {
   async activateView() {
     const { workspace } = this.app;
     
-    workspace.detachLeavesOfType(MESH_VIEW_TYPE);
-    
     let leaf = workspace.getLeavesOfType(MESH_VIEW_TYPE)[0];
     
     if (!leaf) {
@@ -66,8 +67,8 @@ export default class MeshAIPlugin extends Plugin {
         await rightLeaf.setViewState({ type: MESH_VIEW_TYPE, active: true });
         leaf = rightLeaf;
       } else {
-        debugLog(this, 'Failed to create a new leaf for Mesh AI view');
-        return;
+        leaf = workspace.getLeaf('split', 'vertical');
+        await leaf.setViewState({ type: MESH_VIEW_TYPE, active: true });
       }
     }
     

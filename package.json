@@ -18,7 +18,8 @@
   "dependencies": {
     "obsidian": "^1.6.6",
     "tslib": "^2.7.0",
-    "youtube-caption-extractor": "^1.4.3"
+    "youtube-caption-extractor": "^1.4.3",
+    "particles.js": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.6",
