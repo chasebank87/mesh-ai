@@ -24,26 +24,13 @@ export class OpenAIProvider {
     if (!model) {
       throw new Error('No OpenAI model has been selected. Please choose a model in the settings.');
     }
-
-    // Extract pattern content (between 10 exclamation marks)
-    const patternMatch = prompt.match(/!{10}([\s\S]*?)!{10}/);
-    const patternContent = patternMatch ? patternMatch[1].trim() : "You are a helpful assistant.";
-
-    // Extract input data (between 10 asterisks)
-    const inputMatch = prompt.match(/\*{10}([\s\S]*?)\*{10}/);
-    const inputContent = inputMatch ? inputMatch[1].trim() : prompt;
-
     const endpoint = '/chat/completions';
     const payload = {
       model: model,
       messages: [
         {
-          role: "system",
-          content: patternContent
-        },
-        {
           role: "user",
-          content: inputContent
+          content: prompt
         }
       ],
       stream: !!onUpdate

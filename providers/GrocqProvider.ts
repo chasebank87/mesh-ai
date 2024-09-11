@@ -59,21 +59,11 @@ export class GrocqProvider {
     if (!model) {
       new Notice('No Groq model has been selected. Using default model "mixtral-8x7b-32768".');
     }
-
-    // Extract pattern content (between 10 exclamation marks)
-    const patternMatch = prompt.match(/!{10}([\s\S]*?)!{10}/);
-    const patternContent = patternMatch ? patternMatch[1].trim() : "You are a helpful assistant.";
-
-    // Extract input data (between 10 asterisks)
-    const inputMatch = prompt.match(/\*{10}([\s\S]*?)\*{10}/);
-    const inputContent = inputMatch ? inputMatch[1].trim() : prompt;
-
     try {
       const response = await this.apiHelper.post('/chat/completions', {
         model: model,
         messages: [
-          { role: 'system', content: patternContent },
-          { role: 'user', content: inputContent }
+          { role: 'user', content: prompt }
         ],
       }) as GroqResponse;
 
