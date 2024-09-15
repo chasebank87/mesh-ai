@@ -469,6 +469,7 @@ input:checked + .mesh-slider:before {
   background: linear-gradient(90deg, var(--mesh-quaternary), var(--mesh-primary), var(--mesh-quaternary), var(--mesh-primary));
   background-size: 400% 400%;
   animation: rotate-gradient 3s ease infinite;
+  color: var(--text-on-accent);
 }
 
 .mesh-submit-button {
@@ -506,6 +507,7 @@ input:checked + .mesh-slider:before {
   align-items: center;
   justify-content: center;
   background: var(--background-primary);
+  color: var(--text-normal) !important;
 }
 
 .loading {
