@@ -308,7 +308,7 @@
   height: 0;
 }
 
-.slider {
+.mesh-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -319,7 +319,7 @@
   transition: .4s;
 }
 
-.slider:before {
+.mesh-slider:before {
   position: absolute;
   content: "";
   height: 16px;
@@ -330,19 +330,19 @@
   transition: .4s;
 }
 
-input:checked + .slider {
-  background-color: var(--background-modifier-border);
+.input-toggle-slider.mesh-slider::before {
+  display: none;
 }
 
-input:checked + .slider:before {
+input:checked + .mesh-slider:before {
   transform: translateX(20px);
 }
 
-.slider.round {
+.mesh-slider.round {
   border-radius: 20px;
 }
 
-.slider.round:before {
+.mesh-slider.round:before {
   border-radius: 50%;
 }
 
@@ -805,7 +805,7 @@ input:checked + .slider:before {
   height: 0;
 }
 
-.mesh-modal .slider {
+.mesh-modal .mesh-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -817,7 +817,7 @@ input:checked + .slider:before {
   border-radius: 20px;
 }
 
-.mesh-modal .slider:before {
+.mesh-modal .mesh-slider:before {
   position: absolute;
   content: "";
   height: 16px;
@@ -829,11 +829,11 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-.mesh-modal input:checked + .slider {
+.mesh-modal input:checked + .mesh-slider {
   background-color: var(--interactive-accent);
 }
 
-.mesh-modal input:checked + .slider:before {
+.mesh-modal input:checked + .mesh-slider:before {
   transform: translateX(20px);
 }
 

@@ -3,7 +3,7 @@ import MeshAIPlugin from '../main';
 import { ProviderName } from '../types';
 import { onPatternSearch, searchPatterns, onPatternSelect, updateSelectedPatternsDisplay } from '../utils/PatternUtils';
 import { processPatterns, processStitchedPatterns } from '../utils/MeshUtils';
-import { createOutputFile } from '../utils/FileUtils';
+import { createOutputFile, createInplaceContent } from '../utils/FileUtils';
 
 export class ProcessClipboardModal extends Modal {
     plugin: MeshAIPlugin;
@@ -83,7 +83,7 @@ export class ProcessClipboardModal extends Modal {
         // Button to refresh clipboard content
         new Setting(contentEl)
             .addButton(button => button
-                .setButtonText('Refresh Clipboard')
+                .setButtonText('Refresh clipboard')
                 .onClick(() => this.refreshClipboardContent()));
 
         // Pattern search container
@@ -136,8 +136,12 @@ this.patternInput.inputEl.addEventListener('keydown', this.handlePatternInputKey
         // Process button
         new Setting(contentEl)
             .addButton(button => button
-                .setButtonText('Process')
-                .onClick(() => this.processClipboard()));
+                .setButtonText('New note')
+                .onClick(() => this.processClipboard()))
+            .addButton(button => button
+                .setButtonText('In place')
+                .onClick(() => this.processClipboard(true)));
+        
 
         // Initial clipboard content refresh
         this.refreshClipboardContent();
@@ -153,7 +157,7 @@ this.patternInput.inputEl.addEventListener('keydown', this.handlePatternInputKey
         }
     }
 
-    async processClipboard() {
+    async processClipboard(inPlace: boolean = false) {
         const input = this.clipboardPreview.value;
         if (!input) {
             new Notice('No clipboard content');
@@ -170,8 +174,12 @@ this.patternInput.inputEl.addEventListener('keydown', this.handlePatternInputKey
             } else {
                 processedContent = await processPatterns(this.plugin, this.plugin.settings.selectedProvider, this.selectedPatterns, input);
             }
-
-            await createOutputFile(this.plugin, processedContent, outputFileName);
+            // write to active file where cursor is
+            if (inPlace) {
+                await createInplaceContent(this.plugin, processedContent);
+            } else {
+                await createOutputFile(this.plugin, processedContent, outputFileName);
+            }
             this.close();
             new Notice('Clipboard content processed successfully');
         } catch (error) {

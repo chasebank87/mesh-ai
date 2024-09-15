@@ -1,4 +1,4 @@
-import { App, TFile, Notice } from 'obsidian';
+import { App, TFile, Notice, Editor, MarkdownView } from 'obsidian';
 import MeshAIPlugin from '../main';
 
 export async function getActiveNoteContent(app: App): Promise<string> {
@@ -40,4 +40,18 @@ export async function createOutputFile(plugin: MeshAIPlugin, content: string, ou
     if (file instanceof TFile) {
         await plugin.app.workspace.getLeaf(false).openFile(file);
     }
+}
+
+export async function createInplaceContent(plugin: MeshAIPlugin, content: string): Promise<void> {
+    const activeView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeView) {
+        new Notice('No active Markdown view found');
+        return;
+    }
+
+    const editor = activeView.editor;
+    const cursor = editor.getCursor();
+
+    editor.replaceRange(content, cursor);
+    new Notice('Content inserted at cursor position');
 }

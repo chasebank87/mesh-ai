@@ -95,7 +95,7 @@ export class MeshView extends ItemView {
     const toggleContainer = inputCard.createEl('div', { cls: 'input-toggle-container' });
 
     // Create a slider element
-    const slider = toggleContainer.createEl('div', { cls: 'input-toggle-slider' });
+    const slider = toggleContainer.createEl('div', { cls: 'input-toggle-slider mesh-slider' });
 
     // Create radio buttons for the toggle switch
     const options = ['active-note', 'clipboard', this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily'];
@@ -172,7 +172,7 @@ export class MeshView extends ItemView {
       cls: 'pattern-stitching-input'
     });
     stitchingInput.checked = this.patternStitchingEnabled; // Set the initial state
-    stitchingToggle.createEl('span', { cls: 'slider round' });
+    stitchingToggle.createEl('span', { cls: 'mesh-slider round' });
     const stitchingLabel = stitchingContainer.createEl('span', { text: 'Pattern stitching', cls: 'pattern-stitching-label' });
 
     // Add event listener for the toggle
