@@ -172,7 +172,7 @@ export class MeshView extends ItemView {
       cls: 'pattern-stitching-input'
     });
     stitchingInput.checked = this.patternStitchingEnabled; // Set the initial state
-    stitchingToggle.createEl('span', { cls: 'mesh-slider round' });
+    const stitchSpan = stitchingToggle.createEl('span', { cls: 'mesh-slider round' });
     const stitchingLabel = stitchingContainer.createEl('span', { text: 'Pattern stitching', cls: 'pattern-stitching-label' });
 
     // Add event listener for the toggle
@@ -181,6 +181,11 @@ export class MeshView extends ItemView {
       this.plugin.settings.patternStitchingEnabled = this.patternStitchingEnabled;
       this.plugin.saveSettings();
       const status = this.patternStitchingEnabled ? 'enabled' : 'disabled';
+      if (status === 'enabled') {
+        stitchSpan.addClass('stitching-enabled');
+      } else {
+        stitchSpan.removeClass('stitching-enabled');
+      }
       new Notice(`Pattern Stitching ${status}.`);
     });
 
@@ -235,23 +240,43 @@ export class MeshView extends ItemView {
         try {
           (window as any).particlesJS('particles-js', {
             particles: {
-              number: { value: 90, density: { enable: true, value_area: 800 } },
-              color: { value: ["#81a0ed", "#694daa"] },
-              shape: { type: "circle" },
-              opacity: { value: 0.3, random: false },
-              size: { value: 2, random: true },
+              number: { value: 120, density: { enable: true, value_area: 1000 } },
+              color: { value: ["#81a0ed", "#694daa", "#9c27b0", "#3f51b5"] },
+              shape: { 
+                type: ["circle", "triangle"],
+                polygon: { nb_sides: 5 }
+              },
+              opacity: { value: 0.5, random: true, anim: { enable: true, speed: 0.8, opacity_min: 0.1, sync: false } },
+              size: { value: 3, random: true, anim: { enable: true, speed: 1.5, size_min: 0.1, sync: false } },
               line_linked: { 
                 enable: true, 
-                distance: 150, 
+                distance: 200, 
                 color: "#81a0ed", 
-                opacity: 0.2, 
+                opacity: 0.3, 
                 width: 1 
               },
-              move: { enable: true, speed: 1, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+              move: { 
+                enable: true, 
+                speed: 1.5, 
+                direction: "none", 
+                random: true, 
+                straight: false, 
+                out_mode: "bounce", 
+                bounce: false,
+                attract: { enable: false, rotateX: 600, rotateY: 1200 }
+              }
             },
             interactivity: {
               detect_on: "canvas",
-              events: { onhover: { enable: false }, onclick: { enable: false }, resize: true },
+              events: { 
+                onhover: { enable: true, mode: "grab" }, 
+                onclick: { enable: true, mode: "push" }, 
+                resize: true 
+              },
+              modes: {
+                grab: { distance: 150, line_linked: { opacity: 0.5 } },
+                push: { particles_nb: 3 }
+              }
             },
             retina_detect: true
           });

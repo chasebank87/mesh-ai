@@ -36,7 +36,7 @@
   z-index: 1;
   transition: all 0.3s ease !important;
   overflow: visible;
-  background-color: var(--background-secondary);
+  background-color: color-mix(in sRGB, var(--background-secondary) 50%, transparent);
 }
 
 .mesh-card::before {
@@ -315,7 +315,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--background-primary);
+  background-color: var(--background-modifier-hover);
   transition: .4s;
 }
 
@@ -978,4 +978,8 @@ input:checked + .mesh-slider:before {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.stitching-enabled {
+  background-color: color-mix(in sRGB, var(--caret-color) 50%, var(--background-primary)) !important;
 }
