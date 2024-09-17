@@ -14,6 +14,7 @@ import { debugLog } from './utils/MeshUtils';
 import { ProcessActiveNoteModal } from './modals/ProcessActiveNoteModal';
 import { ProcessClipboardModal } from 'modals/ProcessClipboardModal';
 import { TavilySearchModal } from 'modals/TavilySearchModal';
+import { TavilySearchModalWF } from 'modals/TavilySearchModalWF';
 import { processWorkflow } from './utils/WorkflowUtils';
 import { createOutputFile } from './utils/FileUtils';
 import { processPatterns, processStitchedPatterns } from './utils/MeshUtils';
@@ -38,7 +39,7 @@ export default class MeshAIPlugin extends Plugin {
       (leaf) => new MeshView(leaf, this)
     );
 
-    // Add the new command
+    // Add the new commands
     this.addCommand({
       id: 'process-active-note',
       name: 'Process Active Note',
@@ -47,12 +48,19 @@ export default class MeshAIPlugin extends Plugin {
       }
     });
 
-    // Add the new command
     this.addCommand({
       id: 'process-clipboard',
       name: 'Process Clipboard',
       callback: () => {
         new ProcessClipboardModal(this.app, this).open();
+      }
+    });
+
+    this.addCommand({
+      id: 'tavily-search',
+      name: 'Tavily Search',
+      callback: () => {
+        new TavilySearchModal(this.app, this).open();
       }
     });
 
@@ -85,7 +93,7 @@ export default class MeshAIPlugin extends Plugin {
       this.addCommand({
           id: `mesh-ai-workflow-${index + 1}-tavily`,
           name: `Run Workflow: ${workflow.name} (Tavily)`,
-          callback: () => new TavilySearchModal(this.app, this, workflow).open(),
+          callback: () => new TavilySearchModalWF(this.app, this, workflow).open(),
         });
     });
   }
