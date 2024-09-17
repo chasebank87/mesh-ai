@@ -36,7 +36,7 @@
   z-index: 1;
   transition: all 0.3s ease !important;
   overflow: visible;
-  background-color: color-mix(in sRGB, var(--background-secondary) 50%, transparent);
+  background-color: color-mix(in sRGB, var(--background-secondary) 80%, transparent);
 }
 
 .mesh-card::before {
