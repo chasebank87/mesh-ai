@@ -8,18 +8,34 @@ export class MicrosoftProvider {
   private plugin: MeshAIPlugin;
 
   constructor(apiKey: string, plugin: MeshAIPlugin) {
-    this.apiHelper = new CloudAPIHelper('https://api.cognitive.microsoft.com', {
+    const endpointUrl = plugin.settings.microsoftEndpointUrl || 'https://api.cognitive.microsoft.com';
+    this.apiHelper = new CloudAPIHelper(endpointUrl, {
       'api-key': apiKey
-    }, this.plugin);
+    }, plugin);
     this.plugin = plugin;
   }
 
   async getAvailableModels(): Promise<string[]> {
     try {
-      const response = await this.apiHelper.post('/openai/deployments?api-version=2023-05-15', {});
-      if (response.value && Array.isArray(response.value)) {
-        return response.value
-          .filter((deployment: any) => deployment.model.startsWith('gpt'))
+      const deploymentEndpoint = '/openai/deployments?api-version=2023-03-15-preview';
+  
+      debugLog(this.plugin, `Fetching Microsoft models from: ${deploymentEndpoint}`);
+  
+      const response = await this.apiHelper.get(deploymentEndpoint);
+      
+      debugLog(this.plugin, `Microsoft API response:`, response);
+  
+      if (response.error) {
+        throw new Error(`Azure API Error: ${response.error.code} - ${response.error.message}`);
+      }
+  
+      if (response.data && Array.isArray(response.data)) {
+        return response.data
+          .filter((deployment: any) => 
+            deployment.status === 'succeeded' && 
+            deployment.model && 
+            typeof deployment.model === 'string'
+          )
           .map((deployment: any) => deployment.id);
       } else {
         throw new Error('Unexpected response format from Microsoft API');
@@ -41,7 +57,7 @@ export class MicrosoftProvider {
     let fullResponse = '';
 
     try {
-      await this.apiHelper.postStream(`/openai/deployments/${model}/chat/completions?api-version=2023-05-15`, {
+      await this.apiHelper.postStream(`openai/deployments/${model}/completions?api-version=2023-05-15`, {
         messages: [{ role: 'user', content: prompt }],
         stream: true
       }, (chunk) => {

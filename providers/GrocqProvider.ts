@@ -59,11 +59,12 @@ export class GrocqProvider {
     if (!model) {
       new Notice('No Groq model has been selected. Using default model "mixtral-8x7b-32768".');
     }
-
     try {
       const response = await this.apiHelper.post('/chat/completions', {
         model: model,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'user', content: prompt }
+        ],
       }) as GroqResponse;
 
       if (response.choices && response.choices.length > 0) {

@@ -1,4 +1,4 @@
-import { App, TFile, Notice } from 'obsidian';
+import { App, TFile, Notice, Editor, MarkdownView } from 'obsidian';
 import MeshAIPlugin from '../main';
 
 export async function getActiveNoteContent(app: App): Promise<string> {
@@ -9,13 +9,20 @@ export async function getActiveNoteContent(app: App): Promise<string> {
     throw new Error('No active note found');
 }
 
-export async function createOutputFile(plugin: MeshAIPlugin, content: string, outputFileNameInput: HTMLInputElement) {
+export async function createOutputFile(plugin: MeshAIPlugin, content: string, outputFileNameInput: string | HTMLInputElement) {
     const outputFolder = plugin.settings.meshOutputFolder;
     if (!outputFolder) {
         throw new Error('Mesh output folder not set');
     }
 
-    let fileName = outputFileNameInput.value.trim() || 'Mesh Note';
+    let fileName: string;
+    if (typeof outputFileNameInput === 'string') {
+        fileName = outputFileNameInput.trim();
+    } else {
+        fileName = outputFileNameInput.value.trim();
+    }
+
+    fileName = fileName || 'Mesh Note';
     let fileNameWithExtension = `${fileName}.md`;
     let counter = 1;
 
@@ -27,7 +34,24 @@ export async function createOutputFile(plugin: MeshAIPlugin, content: string, ou
     const filePath = `${outputFolder}/${fileNameWithExtension}`;
     await plugin.app.vault.create(filePath, content);
     new Notice(`File created: ${fileNameWithExtension}`);
-    // open the created file
+    
+    // Open the created file
     const file = plugin.app.vault.getAbstractFileByPath(filePath);
-    await this.app.workspace.getLeaf(false).openFile(file);
+    if (file instanceof TFile) {
+        await plugin.app.workspace.getLeaf(false).openFile(file);
+    }
+}
+
+export async function createInplaceContent(plugin: MeshAIPlugin, content: string): Promise<void> {
+    const activeView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeView) {
+        new Notice('No active Markdown view found');
+        return;
+    }
+
+    const editor = activeView.editor;
+    const cursor = editor.getCursor();
+
+    editor.replaceRange(content, cursor);
+    new Notice('Content inserted at cursor position');
 }

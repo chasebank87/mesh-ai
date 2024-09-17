@@ -1,4 +1,5 @@
 type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama';
+type SearchProviderName = 'tavily' | 'perplexity';
 
 type ProviderApiKeys = {
   [K in Exclude<ProviderName, 'ollama'>]: string;
@@ -22,8 +23,11 @@ interface PluginSettings {
   anthropicApiKey: string;
   grocqApiKey: string;
   tavilyApiKey: string;
+  usePerplexity: boolean;
+  perplexityApiKey: string;
   youtubeApiKey: string;
   ollamaServerUrl: string;
+  microsoftEndpointUrl: string;
   selectedProvider: ProviderName;
   selectedModel: string;
   providerModels: ProviderModels;
@@ -32,6 +36,7 @@ interface PluginSettings {
   meshOutputFolder: string;
   patternStitchingEnabled: boolean;
   enableDebugging: boolean;
+  workflows: Workflow[];
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
@@ -41,8 +46,11 @@ const DEFAULT_SETTINGS: PluginSettings = {
   anthropicApiKey: '',
   grocqApiKey: '',
   tavilyApiKey: '',
+  usePerplexity: false,
+  perplexityApiKey: '',
   youtubeApiKey: '',
   ollamaServerUrl: 'http://localhost:11434',
+  microsoftEndpointUrl: '',
   selectedProvider: 'openai',
   selectedModel: '',
   providerModels: {
@@ -58,6 +66,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
   meshOutputFolder: '',
   patternStitchingEnabled: false,
   enableDebugging: false,
+  workflows: []
 };
 
 interface GitHubApiItem {
@@ -111,8 +120,16 @@ interface OllamaModelsResponse {
   models: OllamaModel[];
 }
 
+interface Workflow {
+  name: string;
+  provider: ProviderName;
+  patterns: string[];
+  usePatternStitching: boolean;
+}
+
 // At the bottom of the file, modify your exports:
 export type {
+  SearchProviderName,
   ProviderName,
   ProviderApiKeys,
   ProviderModels,
@@ -124,6 +141,7 @@ export type {
   OllamaModelDetails,
   OllamaModel,
   OllamaModelsResponse,
+  Workflow
 };
 
 // Export the DEFAULT_SETTINGS separately as it's a value, not a type
