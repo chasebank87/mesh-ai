@@ -42,7 +42,7 @@
 .mesh-card::before {
   content: '';
   position: absolute;
-  top: 2px;
+  top: 0px;
   left: 0;
   right: 0;
   height: 8px;
