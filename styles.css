@@ -424,19 +424,6 @@ input:checked + .mesh-slider:before {
   transform-style: preserve-3d;
 }
 
-.mesh-submit-button {
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-on-accent);
-  background: linear-gradient(to right, var(--mesh-primary), var(--mesh-quaternary));
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
 @keyframes rotate-gradient {
   0% {
     background-position: 0% 50%;
@@ -556,7 +543,8 @@ input:checked + .mesh-slider:before {
   border-radius: 20px;
   overflow: hidden;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 3px;
+  align-items: center;
+  height: 40px;
 }
 
 .input-toggle-label {
@@ -571,19 +559,17 @@ input:checked + .mesh-slider:before {
 
 .input-toggle-text {
   display: block;
-  padding: 10px;
   cursor: pointer;
   transition: color 0.3s;
   position: relative;
   z-index: 2;
+  margin-right: 5px;
 }
 
 .input-toggle-slider {
   position: absolute;
-  top: 3px;
-  left: 3px;
   width: 33%;
-  height: calc(100% - 6px);
+  height: 100%;
   background: linear-gradient(to bottom, var(--interactive-accent), var(--interactive-accent-hover));
   border-radius: 17px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -995,35 +981,6 @@ input:checked + .mesh-slider:before {
   margin-left: 4px;
 }
 
-/* Media query for smaller screens */
-@media (max-width: 440px) {
-  .input-toggle-container {
-    max-width: 100%;
-    padding: 3px;
-  }
-
-  .input-toggle-label {
-    padding: 3px 5px;
-  }
-
-  .input-toggle-text {
-    font-size: 6px !important;
-    padding: 3px 5px;
-  }
-
-  .input-toggle-slider {
-    top: 3px;
-    height: calc(100% - 6px);
-  }
-}
-
-/* Media query for even smaller screens */
-@media (max-width: 350px) {
-  .input-toggle-text {
-    font-size: 10px;
-    padding: 2px 3px;
-  }
-}
 
 .mesh-model-container {
   display: flex;
