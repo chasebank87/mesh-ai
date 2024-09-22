@@ -2,6 +2,7 @@ import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { Notice } from 'obsidian';
 import { debugLog } from '../utils/MeshUtils';
+import { SYSTEM_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 
 export class MicrosoftProvider {
   private apiHelper: CloudAPIHelper;
@@ -58,7 +59,10 @@ export class MicrosoftProvider {
 
     try {
       await this.apiHelper.postStream(`openai/deployments/${model}/completions?api-version=2023-05-15`, {
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT_TEMPLATE },
+          { role: 'user', content: prompt }
+        ],
         stream: true
       }, (chunk) => {
         if (chunk.choices && chunk.choices[0].delta && chunk.choices[0].delta.content) {
