@@ -158,33 +158,40 @@ export class MeshView extends ItemView {
     const slider = toggleContainer.createEl('div', { cls: 'input-toggle-slider mesh-slider' });
 
     // Create radio buttons for the toggle switch
-    const options = ['note', 'clipboard', this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily'];
+    const options = [
+      { value: 'note', text: 'Note', icon: '📝' },
+      { value: 'clipboard', text: 'Clipboard', icon: '📋' },
+      { value: this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily', text: this.plugin.settings.usePerplexity ? 'Perplexity' : 'Tavily', icon: '🔍' }
+    ];
+
     options.forEach((option, index) => {
         const label = toggleContainer.createEl('label', { cls: 'input-toggle-label' });
         const input = label.createEl('input', {
             attr: {
                 type: 'radio',
                 name: 'input-source',
-                value: option
+                value: option.value
             },
             cls: 'input-toggle-input'
         });
 
-        // Set the default checked option
-        if (option === 'active-note') {
-            input.checked = true;
-        }
+      if (option.value === 'note') {
+        input.checked = true;
+      }
 
-        label.createEl('span', { 
-          text: option === 'perplexity' ? 'Perplexity' : option.charAt(0).toUpperCase() + option.slice(1), 
-          cls: 'input-toggle-text' 
-        });
-  
+      label.createEl('span', { 
+        text: option.text, 
+        cls: 'input-toggle-text' 
+      });
 
-        // Add event listener to handle changes
-        input.addEventListener('change', () => {
-            this.handleInputSourceChange(option, index);
-        });
+      label.createEl('span', {
+        text: option.icon,
+        cls: 'input-toggle-icon'
+      });
+
+      input.addEventListener('change', () => {
+        this.handleInputSourceChange(option.value, index);
+      });
     });
 
     // Tavily search input
@@ -271,6 +278,17 @@ export class MeshView extends ItemView {
 
     // Add click outside listener
     document.addEventListener('click', this.handleClickOutside);
+
+    setTimeout(() => {
+      container.addClass('loaded');
+    }, 100);
+
+    this.registerInterval(
+      window.setInterval(() => {
+        const width = this.containerEl.offsetWidth;
+        this.adjustLayoutForWidth(width);
+      }, 100)
+    );
   }
 
   private handleClickOutside = (event: MouseEvent) => {
@@ -607,13 +625,32 @@ export class MeshView extends ItemView {
   
   private adjustLayoutForWidth(width: number) {
     const container = this.containerEl.querySelector('.mesh-view-container') as HTMLElement;
-    if (width < 480) {
-      container.style.gridTemplateColumns = '1fr';
-    } else if (width < 768) {
-      container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    const cards = Array.from(container.querySelectorAll('.mesh-card')) as HTMLElement[];
+    const inputToggleLabels = Array.from(this.containerEl.querySelectorAll('.input-toggle-label')) as HTMLElement[];
+    
+    if (width < 409) {
+      //container.style.gridTemplateColumns = '1fr';
+      inputToggleLabels.forEach(label => {
+        const textSpan = label.querySelector('.input-toggle-text') as HTMLElement;
+        const iconSpan = label.querySelector('.input-toggle-icon') as HTMLElement;
+        if (textSpan && iconSpan) {
+          textSpan.style.display = 'none';
+          iconSpan.style.display = 'inline';
+        }
+      });
     } else {
-      container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
+      //container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
+      inputToggleLabels.forEach(label => {
+        const textSpan = label.querySelector('.input-toggle-text') as HTMLElement;
+        const iconSpan = label.querySelector('.input-toggle-icon') as HTMLElement;
+        if (textSpan && iconSpan) {
+          textSpan.style.display = 'inline';
+          iconSpan.style.display = 'none';
+        }
+      });
     }
+    
+    //cards.forEach(card => card.style.display = 'block');
   }
 
   async onClose() {
