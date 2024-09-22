@@ -44,7 +44,8 @@ export class ProcessActiveNoteModal extends Modal {
         microsoft: 'microsoft',
         anthropic: 'anthropic',
         grocq: 'grocq',
-        ollama: 'ollama'
+        ollama: 'ollama',
+        openrouter: 'openrouter'
     };
 
     new Setting(contentEl)

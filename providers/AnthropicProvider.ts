@@ -2,6 +2,7 @@ import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { Notice } from 'obsidian';
 import { debugLog } from '../utils/MeshUtils';
+import { SYSTEM_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 
 export class AnthropicProvider {
   private apiHelper: CloudAPIHelper;
@@ -44,7 +45,10 @@ export class AnthropicProvider {
     try {
       await this.apiHelper.postStream('/messages', {
         model: model,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT_TEMPLATE },
+          { role: 'user', content: prompt }
+        ],
         max_tokens: 1000,
         stream: true
       }, (chunk) => {

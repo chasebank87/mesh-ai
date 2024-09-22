@@ -2,7 +2,7 @@ import { Notice } from 'obsidian';
 import { OllamaAPIHelper } from '../utils/OllamaAPIHelper';
 import MeshAIPlugin from '../main';
 import { debugLog } from '../utils/MeshUtils';
-
+import { SYSTEM_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 export class OllamaProvider {
   private apiHelper: OllamaAPIHelper;
   private plugin: MeshAIPlugin;
@@ -39,6 +39,7 @@ export class OllamaProvider {
     try {
       await this.apiHelper.postStream('/api/generate', {
         model: model,
+        system: SYSTEM_PROMPT_TEMPLATE,
         prompt: prompt,
         stream: true
       }, (chunk) => {
