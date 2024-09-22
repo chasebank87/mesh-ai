@@ -69,8 +69,10 @@ export class MeshView extends ItemView {
       microsoft: 'microsoft',
       anthropic: 'anthropic',
       grocq: 'grocq',
-      ollama: 'ollama'
+      ollama: 'ollama',
+      openrouter: 'openrouter'
     };
+    
     const providerCard = this.createCard(formContainer, 'provider');
     const providerSelect = UIHelper.createSelect(
         providerCard, 
@@ -98,7 +100,7 @@ export class MeshView extends ItemView {
     const slider = toggleContainer.createEl('div', { cls: 'input-toggle-slider mesh-slider' });
 
     // Create radio buttons for the toggle switch
-    const options = ['active-note', 'clipboard', this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily'];
+    const options = ['note', 'clipboard', this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily'];
     options.forEach((option, index) => {
         const label = toggleContainer.createEl('label', { cls: 'input-toggle-label' });
         const input = label.createEl('input', {
@@ -534,8 +536,31 @@ export class MeshView extends ItemView {
     this.initParticles();
   }
 
+  private setupResizeObserver() {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const width = entry.contentRect.width;
+        this.adjustLayoutForWidth(width);
+      }
+    });
+  
+    resizeObserver.observe(this.containerEl);
+  }
+  
+  private adjustLayoutForWidth(width: number) {
+    const container = this.containerEl.querySelector('.mesh-view-container') as HTMLElement;
+    if (width < 480) {
+      container.style.gridTemplateColumns = '1fr';
+    } else if (width < 768) {
+      container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    } else {
+      container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
+    }
+  }
+
   async onClose() {
     const cleanup = this.initParticles();
+    this.setupResizeObserver();
     cleanup();
     document.removeEventListener('click', this.handleClickOutside);
   }

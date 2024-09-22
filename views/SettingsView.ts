@@ -17,7 +17,7 @@ export class SettingsView extends PluginSettingTab {
     const {containerEl} = this;
     containerEl.empty();
 
-    const providers: ProviderName[] = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama'];
+    const providers: ProviderName[] = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama', 'openrouter'];
 
     for (const provider of providers) {
       if (provider === 'ollama') {
@@ -133,6 +133,17 @@ export class SettingsView extends PluginSettingTab {
         }));
   }
 
+  new Setting(containerEl)
+    .setName('OpenRouter API Key')
+    .setDesc('Enter your OpenRouter API key')
+    .addText(text => text
+      .setPlaceholder('Enter your API key')
+      .setValue(this.plugin.settings.openrouterApiKey || '')
+      .onChange(async (value) => {
+        this.plugin.settings.openrouterApiKey = value;
+        await this.plugin.saveSettings();
+      }));
+
     
     new Setting(containerEl)
     .setName('YouTube API key')
@@ -244,7 +255,7 @@ displayWorkflows() {
                   this.plugin.createWorkflowCommands();
               }))
           .addDropdown(dropdown => {
-              const providers = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama'];
+              const providers = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama', 'openrouter'];
               providers.forEach(provider => dropdown.addOption(provider, provider));
               dropdown.setValue(workflow.provider)
                   .onChange(async (value) => {

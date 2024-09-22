@@ -19,6 +19,7 @@ import { processWorkflow } from './utils/WorkflowUtils';
 import { createOutputFile } from './utils/FileUtils';
 import { processPatterns, processStitchedPatterns } from './utils/MeshUtils';
 import { PerplexityProvider } from 'providers/PerplexityProvider';
+import { OpenRouterProvider } from './providers/OpenRouterProvider';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
@@ -299,6 +300,8 @@ async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
         return new GrocqProvider(this.settings.grocqApiKey, this);
       case 'ollama':
         return new OllamaProvider(this.settings.ollamaServerUrl, this);
+      case 'openrouter':
+        return new OpenRouterProvider(this.settings.openrouterApiKey, this);
       default:
         throw new Error(`Unknown provider: ${providerName}`);
     }

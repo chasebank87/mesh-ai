@@ -990,3 +990,33 @@ input:checked + .mesh-slider:before {
   width: 100%;
   margin-left: 4px;
 }
+
+/* Media query for smaller screens */
+@media (max-width: 440px) {
+  .input-toggle-container {
+    max-width: 100%;
+    padding: 3px;
+  }
+
+  .input-toggle-label {
+    padding: 3px 5px;
+  }
+
+  .input-toggle-text {
+    font-size: 6px !important;
+    padding: 3px 5px;
+  }
+
+  .input-toggle-slider {
+    top: 3px;
+    height: calc(100% - 6px);
+  }
+}
+
+/* Media query for even smaller screens */
+@media (max-width: 350px) {
+  .input-toggle-text {
+    font-size: 10px;
+    padding: 2px 3px;
+  }
+}

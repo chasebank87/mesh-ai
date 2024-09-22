@@ -1,11 +1,4 @@
 export const FULL_PROMPT_TEMPLATE = `
-Instructions:
-<instructions>
-You are a helpful assistant. Follow the instructions provided within the XML tags to process the data accurately.
-The prompt data should never be included in the final response. Markdown formatting without markdown code block syntax
-should be used to enhance readability.
-</instructions>
-
 Prompt:
 <prompt>
 {patternContents}
@@ -17,3 +10,5 @@ Input Data:
 </input>
 
 `;
+
+export const SYSTEM_PROMPT_TEMPLATE = 'You are a helpful assistant. Follow the instructions provided within the XML tags to process the data accurately.The prompt data should never be included in the final response. Use Markdown formatting to enhance readability.The output should not be wrapped with a markdown code block.';

@@ -1,4 +1,4 @@
-type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama';
+type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama' | 'openrouter';
 type SearchProviderName = 'tavily' | 'perplexity';
 
 type ProviderApiKeys = {
@@ -14,6 +14,7 @@ interface ProviderModels {
   anthropic: string[];
   grocq: string[];
   ollama: string[];
+  openrouter: string[];
 }
 
 interface PluginSettings {
@@ -37,6 +38,7 @@ interface PluginSettings {
   patternStitchingEnabled: boolean;
   enableDebugging: boolean;
   workflows: Workflow[];
+  openrouterApiKey: string;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
@@ -46,6 +48,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
   anthropicApiKey: '',
   grocqApiKey: '',
   tavilyApiKey: '',
+  openrouterApiKey: '',
   usePerplexity: false,
   perplexityApiKey: '',
   youtubeApiKey: '',
@@ -59,7 +62,8 @@ const DEFAULT_SETTINGS: PluginSettings = {
     microsoft: [],
     anthropic: [],
     grocq: [],
-    ollama: []
+    ollama: [],
+    openrouter: []
   },
   customPatternsFolder: '',
   fabricPatternsFolder: '',

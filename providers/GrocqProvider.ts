@@ -2,6 +2,7 @@ import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { Notice } from 'obsidian';
 import { debugLog } from '../utils/MeshUtils';
+import { SYSTEM_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 
 interface GroqResponse {
   id: string;
@@ -63,6 +64,7 @@ export class GrocqProvider {
       const response = await this.apiHelper.post('/chat/completions', {
         model: model,
         messages: [
+          { role: 'system', content: SYSTEM_PROMPT_TEMPLATE },
           { role: 'user', content: prompt }
         ],
       }) as GroqResponse;
