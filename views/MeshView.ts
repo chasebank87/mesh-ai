@@ -8,6 +8,7 @@ import { getActiveNoteContent, createOutputFile } from '../utils/FileUtils';
 import { FULL_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 import { UIHelper } from '../utils/UIHelper';
 import { getInputContent, processPatterns, processStitchedPatterns, debugLog} from '../utils/MeshUtils';
+import { ModelSuggestModal } from '../utils/ModelSuggestModal';
 
 export const MESH_VIEW_TYPE = 'mesh-view';
 
@@ -28,6 +29,7 @@ export class MeshView extends ItemView {
   private stopRotating: (card: HTMLElement) => void;
   private currentSelectedIndex: number = -1;
   private patternResultElements: HTMLElement[] = [];
+  private modelNameSpan: HTMLSpanElement;
 
   constructor(leaf: WorkspaceLeaf, plugin: MeshAIPlugin) {
     super(leaf);
@@ -83,11 +85,67 @@ export class MeshView extends ItemView {
     // Set the default provider from settings
     providerSelect.value = this.plugin.settings.selectedProvider;
 
+    // Model display and selection
+    const modelContainer = providerCard.createEl('div', { cls: 'mesh-model-container' });
+    const modelText = modelContainer.createEl('p', { cls: 'mesh-model-text' });
+    const poweredBySpan = modelText.createEl('span', { text: 'powered by ', cls: 'mesh-powered-by' });
+    this.modelNameSpan = modelText.createEl('span', { cls: 'mesh-model-name' });
+    const pencilIcon = modelText.createEl('span', { cls: 'mesh-model-edit-icon', text: '✏️' });
+
+    const updateModelDisplay = (modelName: string) => {
+      const oldModelSpan = this.modelNameSpan.querySelector('.mesh-model-name-old') || this.modelNameSpan.cloneNode(true) as HTMLSpanElement;
+      const newModelSpan = this.modelNameSpan.querySelector('.mesh-model-name-new') || this.modelNameSpan.cloneNode(true) as HTMLSpanElement;
+      
+      oldModelSpan.textContent = this.modelNameSpan.textContent;
+      newModelSpan.textContent = modelName;
+      
+      oldModelSpan.classList.add('mesh-model-name-old');
+      newModelSpan.classList.add('mesh-model-name-new');
+      
+      this.modelNameSpan.innerHTML = '';
+      this.modelNameSpan.appendChild(oldModelSpan);
+      this.modelNameSpan.appendChild(newModelSpan);
+      
+      // Trigger reflow
+      void this.modelNameSpan.offsetWidth;
+      
+      this.modelNameSpan.classList.add('changing');
+      
+      setTimeout(() => {
+        this.modelNameSpan.classList.remove('changing');
+        this.modelNameSpan.textContent = modelName;
+      }, 600); // Duration of the animation
+    };
+
+    const updateModels = async () => {
+      const provider = this.plugin.getProvider(providerSelect.value as ProviderName);
+      const models = await provider.getAvailableModels();
+      const currentModel = this.plugin.settings.providerModels[providerSelect.value as ProviderName][0] || models[0];
+      updateModelDisplay(currentModel);
+    };
+
+    await updateModels();
+
+    const openModelSelector = () => {
+      const provider = this.plugin.getProvider(providerSelect.value as ProviderName);
+      provider.getAvailableModels().then(models => {
+        new ModelSuggestModal(this.app, models, (model: string) => {
+          this.plugin.settings.providerModels[providerSelect.value as ProviderName] = [model];
+          this.plugin.saveSettings();
+          updateModelDisplay(model);
+        }).open();
+      });
+    };
+
+    this.modelNameSpan.addEventListener('click', openModelSelector);
+    pencilIcon.addEventListener('click', openModelSelector);
+
     // Add an event listener to update the settings when the provider changes
-    providerSelect.addEventListener('change', (event) => {
-        const newProvider = (event.target as HTMLSelectElement).value as ProviderName;
-        this.plugin.settings.selectedProvider = newProvider;
-        this.plugin.saveSettings();
+    providerSelect.addEventListener('change', async (event) => {
+      const newProvider = (event.target as HTMLSelectElement).value as ProviderName;
+      this.plugin.settings.selectedProvider = newProvider;
+      await this.plugin.saveSettings();
+      await updateModels();
     });
     
     // Input source selection card

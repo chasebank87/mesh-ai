@@ -132,18 +132,6 @@ export class SettingsView extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
   }
-
-  new Setting(containerEl)
-    .setName('OpenRouter API Key')
-    .setDesc('Enter your OpenRouter API key')
-    .addText(text => text
-      .setPlaceholder('Enter your API key')
-      .setValue(this.plugin.settings.openrouterApiKey || '')
-      .onChange(async (value) => {
-        this.plugin.settings.openrouterApiKey = value;
-        await this.plugin.saveSettings();
-      }));
-
     
     new Setting(containerEl)
     .setName('YouTube API key')

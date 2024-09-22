@@ -122,11 +122,12 @@
 
 .tavily-search-container {
   overflow: hidden;
+  width: 100%;
   height: fit-content;
 }
 
 .mesh-tavily-input {
-  width: 100% !important;
+  width: 96% !important;
   height: 45px !important;
   padding: 0 15px !important;
   font-size: 14px !important;
@@ -863,10 +864,13 @@ input:checked + .mesh-slider:before {
   max-width: 500px;
   position: relative;
   margin-bottom: 20px;
+  height: 50px;
 }
 
 .mesh-tavily-input {
-  width: 100% !important;
+  width: 98% !important;
+  margin-left: 1%;
+  margin-bottom: 10px;
   height: 40px !important;
   padding: 0 50px 0 20px !important;
   font-size: 16px !important;
@@ -1019,4 +1023,70 @@ input:checked + .mesh-slider:before {
     font-size: 10px;
     padding: 2px 3px;
   }
+}
+
+.mesh-model-container {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  text-align: center;
+  justify-content: center;
+}
+
+.mesh-model-text {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin: 0;
+}
+
+.mesh-powered-by {
+  color: var(--text-muted);
+  margin-right: 5px;
+}
+
+.mesh-model-name {
+  color: var(--interactive-accent);
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  perspective: 1000px;
+}
+
+.mesh-model-edit-icon {
+  cursor: pointer;
+  margin-left: 5px;
+  color: var(--text-muted);
+  transition: color 0.7s ease;
+}
+
+.mesh-model-edit-icon:hover {
+  color: var(--interactive-accent);
+}
+
+.mesh-model-name-old,
+.mesh-model-name-new {
+  backface-visibility: hidden;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease-in-out;
+}
+
+.mesh-model-name-old {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotateX(0deg);
+}
+
+.mesh-model-name-new {
+  transform: rotateX(-180deg);
+}
+
+.mesh-model-name.changing .mesh-model-name-old {
+  transform: rotateX(180deg);
+}
+
+.mesh-model-name.changing .mesh-model-name-new {
+  transform: rotateX(0deg);
 }
