@@ -563,7 +563,7 @@ input:checked + .mesh-slider:before {
   transition: color 0.3s;
   position: relative;
   z-index: 2;
-  margin-right: 5px;
+  margin-right: 4px;
 }
 
 .input-toggle-icon {
