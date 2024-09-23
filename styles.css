@@ -566,6 +566,10 @@ input:checked + .mesh-slider:before {
   margin-right: 5px;
 }
 
+.input-toggle-icon {
+  font-size: 20px;
+}
+
 .input-toggle-slider {
   position: absolute;
   width: 33.33%;
