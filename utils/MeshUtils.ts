@@ -7,7 +7,7 @@ import { getPatternContent } from './PatternUtils';
 import { handleLLMRequest } from './LLMUtils';
 import { FULL_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 
-export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSource: string, tavilySearchInput: HTMLInputElement): Promise<string> {
+export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSource: string, tavilySearchInput?: HTMLInputElement): Promise<string> {
   const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:\S+)/g;
   let input = '';
 
@@ -30,9 +30,13 @@ export async function getInputContent(app: App, plugin: MeshAIPlugin, selectedSo
       }
       break;
     case 'tavily':
+      if(tavilySearchInput) {
       debugLog(plugin, 'Searching Tavily for:', tavilySearchInput.value);
       input = await plugin.tavilyProvider.search(tavilySearchInput.value);
       break;
+    } else {
+      throw new Error('Tavily search input is required');
+    }
   }
 
   if (!input) {

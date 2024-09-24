@@ -17,7 +17,7 @@ import { TavilySearchModal } from 'modals/TavilySearchModal';
 import { TavilySearchModalWF } from 'modals/TavilySearchModalWF';
 import { processWorkflow } from './utils/WorkflowUtils';
 import { createOutputFile } from './utils/FileUtils';
-import { processPatterns, processStitchedPatterns } from './utils/MeshUtils';
+import { processPatterns, processStitchedPatterns, getInputContent } from './utils/MeshUtils';
 import { PerplexityProvider } from 'providers/PerplexityProvider';
 import { OpenRouterProvider } from './providers/OpenRouterProvider';
 
@@ -26,7 +26,6 @@ export default class MeshAIPlugin extends Plugin {
   youtubeProvider: YoutubeProvider;
   tavilyProvider: TavilyProvider;
   perplexityProvider: PerplexityProvider;
-  
   async onload() {
     await this.loadSettings();
     await this.loadParticlesJS();
@@ -104,34 +103,29 @@ export default class MeshAIPlugin extends Plugin {
     // It doesn't need to do anything as Obsidian handles command cleanup automatically
 }
 
-async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
-  let input: string;
-  if (inputType === 'active-note') {
-      const activeFile = this.app.workspace.getActiveFile();
-      if (!activeFile) {
-          new Notice('No active file');
-          return;
-      }
-      input = await this.app.vault.read(activeFile);
-  } else {
-      input = await navigator.clipboard.readText();
-  }
+  async runWorkflow(workflow: Workflow, inputType: 'active-note' | 'clipboard') {
+    let notice = new Notice(`Running workflow: ${workflow.name}...`, 0);
 
-  try {
+    let input: string;
+    try {
       let result: string;
       if (workflow.usePatternStitching) {
-          result = await processStitchedPatterns(this, workflow.provider, workflow.patterns, input);
+        input = await getInputContent(this.app, this, inputType)
+        result = await processStitchedPatterns(this, workflow.provider, workflow.patterns, input);
       } else {
-          result = await processPatterns(this, workflow.provider, workflow.patterns, input);
+        input = await getInputContent(this.app, this, inputType)
+        result = await processPatterns(this, workflow.provider, workflow.patterns, input);
       }
       const fileName = `Workflow Output ${new Date().toISOString().replace(/:/g, '-')}`;
       await createOutputFile(this, result, fileName);
-      new Notice('Workflow processed successfully');
-  } catch (error) {
+      new Notice(`Workflow '${workflow.name}' processed successfully`);
+    } catch (error) {
       console.error('Error processing workflow:', error);
-      new Notice(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      new Notice(`Error in workflow '${workflow.name}': ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      notice.hide();
+    }
   }
-}
 
   async loadParticlesJS() {
     return new Promise<void>((resolve) => {
