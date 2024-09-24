@@ -159,7 +159,7 @@ export class MeshView extends ItemView {
 
     // Create radio buttons for the toggle switch
     const options = [
-      { value: 'note', text: 'Note', icon: '📝' },
+      { value: 'active-note', text: 'Note', icon: '📝' },
       { value: 'clipboard', text: 'Clipboard', icon: '📋' },
       { value: this.plugin.settings.usePerplexity ? 'perplexity' : 'tavily', text: this.plugin.settings.usePerplexity ? 'Perplexity' : 'Tavily', icon: '🔍' }
     ];
