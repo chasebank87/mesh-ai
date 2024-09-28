@@ -70,6 +70,8 @@ export default class MeshAIPlugin extends Plugin {
     this.addRibbonIcon('brain', 'Mesh AI Integration', () => {
       this.activateView();
     });
+
+    this.updateMeshViewProvider(this.settings.selectedProvider);
   }
 
   createWorkflowCommands() {
@@ -317,6 +319,15 @@ export default class MeshAIPlugin extends Plugin {
     meshLeaves.forEach((leaf) => {
       if (leaf.view instanceof MeshView) {
         (leaf.view as MeshView).updateProviderSelect(newProvider);
+      }
+    });
+  }
+
+  reloadMeshView() {
+    const meshLeaves = this.app.workspace.getLeavesOfType(MESH_VIEW_TYPE);
+    meshLeaves.forEach((leaf) => {
+      if (leaf.view instanceof MeshView) {
+        (leaf.view as MeshView).onOpen();
       }
     });
   }

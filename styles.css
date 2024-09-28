@@ -1051,3 +1051,15 @@ input:checked + .mesh-slider:before {
 .mesh-model-name.changing .mesh-model-name-new {
   transform: rotateX(0deg);
 }
+
+.mesh-provider-container {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+}
+
+.mesh-provider-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}

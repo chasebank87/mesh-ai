@@ -20,8 +20,11 @@ export class SettingsView extends PluginSettingTab {
     const providers: ProviderName[] = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama', 'openrouter'];
 
     for (const provider of providers) {
+      const providerContainer = containerEl.createEl('div', { cls: 'mesh-provider-container' });
+      providerContainer.createEl('h3', { text: provider.charAt(0).toUpperCase() + provider.slice(1) });
+
       if (provider === 'ollama') {
-        new Setting(containerEl)
+        new Setting(providerContainer)
           .setName(`Ollama server URL`)
           .setDesc('Enter the URL for your Ollama server')
           .addText(text => text
@@ -32,7 +35,7 @@ export class SettingsView extends PluginSettingTab {
               await this.plugin.saveSettings();
             }));
       } else if (provider === 'microsoft') {
-        new Setting(containerEl)
+        new Setting(providerContainer)
           .setName('Microsoft Azure API key')
           .setDesc('Enter your Microsoft Azure API key')
           .addText(text => text
@@ -43,7 +46,7 @@ export class SettingsView extends PluginSettingTab {
               await this.plugin.saveSettings();
             }));
     
-        new Setting(containerEl)
+        new Setting(providerContainer)
           .setName('Microsoft Azure Endpoint URL')
           .setDesc('Enter your Microsoft Azure Endpoint URL')
           .addText(text => text
@@ -54,8 +57,8 @@ export class SettingsView extends PluginSettingTab {
               await this.plugin.saveSettings();
             }));
       } else {
-        new Setting(containerEl)
-          .setName(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API key`)
+        new Setting(providerContainer)
+          .setName(`API key`)
           .setDesc(`Enter your ${provider} API key`)
           .addText(text => text
             .setPlaceholder('Enter API key')
@@ -63,32 +66,51 @@ export class SettingsView extends PluginSettingTab {
             .onChange(async (value) => {
               (this.plugin.settings[`${provider}ApiKey` as keyof PluginSettings] as string) = value;
               await this.plugin.saveSettings();
-            }));
-      }
-    
-      // Add model selection for each provider only if there's an API key or server URL
-      const apiKey = provider === 'ollama' ? this.plugin.settings.ollamaServerUrl : 
-                     (provider === 'microsoft' ? this.plugin.settings.microsoftApiKey : 
-                     this.plugin.settings[`${provider}ApiKey`]);
-      if (apiKey) {
-        const modelSetting = new Setting(containerEl)
-          .setName(`${provider.charAt(0).toUpperCase() + provider.slice(1)} model`)
-          .setDesc(`Select the model for ${provider}`)
-          .addDropdown(async (dropdown: DropdownComponent) => {
-            await this.populateModelDropdown(dropdown, provider);
-          });
-    
-        modelSetting.addButton((button: ButtonComponent) => {
-          button
-            .setButtonText('Refresh models')
+            })
+          )
+          .addButton(button => button
+            .setButtonText('Test API Key')
             .onClick(async () => {
-              const dropdown = modelSetting.components[0] as DropdownComponent;
-              await this.populateModelDropdown(dropdown, provider, true);
-            });
-        });
+              await this.testApiKey(provider);
+            })
+          );
       }
+
+      // Add model selection
+      const modelSetting = new Setting(providerContainer)
+        .setName(`Model`)
+        .setDesc(`Select the model for ${provider}`)
+        .addDropdown(async (dropdown: DropdownComponent) => {
+          await this.populateModelDropdown(dropdown, provider);
+        });
+
+      modelSetting.addButton((button: ButtonComponent) => {
+        button
+          .setButtonText('Refresh models')
+          .onClick(async () => {
+            const dropdown = modelSetting.components[0] as DropdownComponent;
+            await this.populateModelDropdown(dropdown, provider, true);
+          });
+      });
+
     }
-    
+
+    // Add default provider setting
+    new Setting(containerEl)
+    .setName('Default Provider')
+    .setDesc('Select the default AI provider')
+    .addDropdown(dropdown => {
+      providers.forEach(provider => {
+        dropdown.addOption(provider, provider.charAt(0).toUpperCase() + provider.slice(1));
+      });
+      dropdown.setValue(this.plugin.settings.selectedProvider);
+      dropdown.onChange(async (value) => {
+        this.plugin.settings.selectedProvider = value as ProviderName;
+        await this.plugin.saveSettings();
+        this.plugin.updateMeshViewProvider(value as ProviderName);
+      });
+    });
+
     new Setting(containerEl)
     .setName('Use Perplexity')
     .setDesc('Enable Perplexity integration (disables Tavily)')
@@ -346,5 +368,37 @@ async populateModelDropdown(dropdown: DropdownComponent, provider: ProviderName,
       debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
     }
     return this.plugin.settings.providerModels[provider] || [];
+  }
+
+  async testApiKey(provider: ProviderName): Promise<void> {
+    try {
+      const apiKey = provider === 'ollama' 
+        ? this.plugin.settings.ollamaServerUrl 
+        : this.plugin.settings[`${provider}ApiKey`];
+
+      if (!apiKey) {
+        new Notice(`Please enter an API key for ${provider}`);
+        return;
+      }
+
+      const providerInstance = this.plugin.getProvider(provider);
+      await providerInstance.getAvailableModels();
+      new Notice(`API key for ${provider} is valid`);
+
+      // Refresh the model dropdown
+      const modelSetting = this.containerEl.querySelector(`.mesh-provider-setting[data-provider="${provider}"] .dropdown`) as HTMLSelectElement;
+      if (modelSetting) {
+        const modelDropdown = new DropdownComponent(modelSetting);
+        await this.populateModelDropdown(modelDropdown, provider, true);
+      }
+    } catch (error) {
+      console.error(`Error testing API key for ${provider}:`, error);
+      new Notice(`Failed to validate API key for ${provider}: ${error.message}`);
+    }
+  }
+
+  hide() {
+    super.hide();
+    this.plugin.reloadMeshView();
   }
 }
