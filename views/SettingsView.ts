@@ -17,7 +17,7 @@ export class SettingsView extends PluginSettingTab {
     const {containerEl} = this;
     containerEl.empty();
 
-    const providers: ProviderName[] = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama', 'openrouter'];
+    const providers: ProviderName[] = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'openrouter', 'ollama', 'lmstudio'];
 
     for (const provider of providers) {
       const providerContainer = containerEl.createEl('div', { cls: 'mesh-provider-container' });
@@ -54,6 +54,17 @@ export class SettingsView extends PluginSettingTab {
             .setValue(this.plugin.settings.microsoftEndpointUrl || '')
             .onChange(async (value) => {
               this.plugin.settings.microsoftEndpointUrl = value;
+              await this.plugin.saveSettings();
+            }));
+      } else if (provider === 'lmstudio') {
+        new Setting(providerContainer)
+          .setName(`LMStudio server URL`)
+          .setDesc('Enter the URL for your LMStudio server')
+          .addText(text => text
+            .setPlaceholder('Enter URL')
+            .setValue(this.plugin.settings.lmstudioServerUrl)
+            .onChange(async (value) => {
+              this.plugin.settings.lmstudioServerUrl = value;
               await this.plugin.saveSettings();
             }));
       } else {
@@ -107,7 +118,6 @@ export class SettingsView extends PluginSettingTab {
       dropdown.onChange(async (value) => {
         this.plugin.settings.selectedProvider = value as ProviderName;
         await this.plugin.saveSettings();
-        this.plugin.updateMeshViewProvider(value as ProviderName);
       });
     });
 

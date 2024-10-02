@@ -30,11 +30,13 @@ export class MeshView extends ItemView {
   private currentSelectedIndex: number = -1;
   private patternResultElements: HTMLElement[] = [];
   private modelNameSpan: HTMLSpanElement;
+  private currentProvider: ProviderName;
 
   constructor(leaf: WorkspaceLeaf, plugin: MeshAIPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.patternStitchingEnabled = this.plugin.settings.patternStitchingEnabled;
+    this.currentProvider = this.plugin.settings.selectedProvider;
   }
 
   getViewType() {
@@ -64,6 +66,13 @@ export class MeshView extends ItemView {
     // Main form container
     const formContainer = container.createEl('div', { cls: 'mesh-form-container' });
 
+    // Check if the default provider is configured
+    const isProviderReady = this.isProviderConfigured(this.plugin.settings.selectedProvider);
+    if (!isProviderReady) {
+      const overlay = container.createEl('div', { cls: 'mesh-overlay' });
+      overlay.createEl('p', { text: 'The default provider selected is not configured.' });
+    }
+
     // Provider selection card
     const PROVIDERS: Record<ProviderName, ProviderName> = {
       openai: 'openai',
@@ -72,18 +81,19 @@ export class MeshView extends ItemView {
       anthropic: 'anthropic',
       grocq: 'grocq',
       ollama: 'ollama',
-      openrouter: 'openrouter'
+      openrouter: 'openrouter',
+      lmstudio: 'lmstudio'
     };
-    
+
     const providerCard = this.createCard(formContainer, 'provider');
     const providerSelect = UIHelper.createSelect(
-        providerCard, 
-        'mesh-provider-select', 
-        Object.values(PROVIDERS)
+      providerCard, 
+      'mesh-provider-select', 
+      Object.values(PROVIDERS)
     );
 
-    // Set the default provider from settings
-    providerSelect.value = this.plugin.settings.selectedProvider;
+    // Set the current provider
+    providerSelect.value = this.currentProvider;
 
     // Model display and selection
     const modelContainer = providerCard.createEl('div', { cls: 'mesh-model-container' });
@@ -118,19 +128,19 @@ export class MeshView extends ItemView {
     };
 
     const updateModels = async () => {
-      const provider = this.plugin.getProvider(providerSelect.value as ProviderName);
+      const provider = this.plugin.getProvider(this.currentProvider);
       const models = await provider.getAvailableModels();
-      const currentModel = this.plugin.settings.providerModels[providerSelect.value as ProviderName][0] || models[0];
+      const currentModel = this.plugin.settings.providerModels[this.currentProvider][0] || models[0];
       updateModelDisplay(currentModel);
     };
 
     await updateModels();
 
     const openModelSelector = () => {
-      const provider = this.plugin.getProvider(providerSelect.value as ProviderName);
+      const provider = this.plugin.getProvider(this.currentProvider);
       provider.getAvailableModels().then(models => {
         new ModelSuggestModal(this.app, models, (model: string) => {
-          this.plugin.settings.providerModels[providerSelect.value as ProviderName] = [model];
+          this.plugin.settings.providerModels[this.currentProvider] = [model];
           this.plugin.saveSettings();
           updateModelDisplay(model);
         }).open();
@@ -140,11 +150,9 @@ export class MeshView extends ItemView {
     this.modelNameSpan.addEventListener('click', openModelSelector);
     pencilIcon.addEventListener('click', openModelSelector);
 
-    // Add an event listener to update the settings when the provider changes
+    // Add an event listener to update the current provider when it changes
     providerSelect.addEventListener('change', async (event) => {
-      const newProvider = (event.target as HTMLSelectElement).value as ProviderName;
-      this.plugin.settings.selectedProvider = newProvider;
-      await this.plugin.saveSettings();
+      this.currentProvider = (event.target as HTMLSelectElement).value as ProviderName;
       await updateModels();
     });
     
@@ -289,6 +297,17 @@ export class MeshView extends ItemView {
         this.adjustLayoutForWidth(width);
       }, 100)
     );
+
+    // Check if the default provider is configured
+    const providerConfigured = this.isProviderConfigured(this.plugin.settings.selectedProvider);
+    if (!providerConfigured) {
+      debugLog(this.plugin, 'Provider not configured');
+      const overlay = container.createEl('div', { cls: 'mesh-overlay' });
+      overlay.createEl('p', { text: 'The default provider selected is not configured.' });
+    }
+    else {
+      debugLog(this.plugin, 'Provider configured');
+    }
   }
 
   private handleClickOutside = (event: MouseEvent) => {
@@ -409,11 +428,10 @@ export class MeshView extends ItemView {
 
   async onSubmit() {
     debugLog(this.plugin, "onSubmit method called");
-    const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
     const selectedInputSource = this.containerEl.querySelector('input[name="input-source"]:checked') as HTMLInputElement;
     const searchInput = this.containerEl.querySelector('.mesh-tavily-input') as HTMLInputElement;
 
-    const selectedProvider = providerSelect.value as ProviderName;
+    const selectedProvider = this.currentProvider;
     const selectedSource = selectedInputSource ? selectedInputSource.value : 'active-note';
     const selectedPatterns = this.selectedPatterns;
 
@@ -540,15 +558,6 @@ export class MeshView extends ItemView {
         searchInput.classList.add('tavily-hidden');
     }
   }
-
-  updateProviderSelect(newProvider: ProviderName) {
-    const providerSelect = this.containerEl.querySelector('.mesh-provider-select') as HTMLSelectElement;
-    if (providerSelect && providerSelect.value !== newProvider) {
-      providerSelect.value = newProvider;
-      // Trigger the change event
-      providerSelect.dispatchEvent(new Event('change'));
-    }
-  }
   
   private handlePatternInputKeydown(event: KeyboardEvent) {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
@@ -658,5 +667,14 @@ export class MeshView extends ItemView {
     this.setupResizeObserver();
     cleanup();
     document.removeEventListener('click', this.handleClickOutside);
+  }
+
+  // Add this method to the MeshView class
+  private isProviderConfigured(provider: ProviderName): boolean {
+    const apiKey = provider === 'ollama' 
+      ? this.plugin.settings.ollamaServerUrl 
+      : this.plugin.settings[`${provider}ApiKey` as keyof PluginSettings];
+    const models = this.plugin.settings.providerModels[provider];
+    return !!apiKey && models.length > 0;
   }
 }

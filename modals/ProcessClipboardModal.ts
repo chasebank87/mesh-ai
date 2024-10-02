@@ -45,7 +45,8 @@ export class ProcessClipboardModal extends Modal {
             anthropic: 'anthropic',
             grocq: 'grocq',
             ollama: 'ollama',
-            openrouter: 'openrouter'
+            openrouter: 'openrouter',
+            lmstudio: 'lmstudio'
         };
 
         new Setting(contentEl)

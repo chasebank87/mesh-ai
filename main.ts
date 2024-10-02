@@ -20,6 +20,7 @@ import { createOutputFile } from './utils/FileUtils';
 import { processPatterns, processStitchedPatterns, getInputContent } from './utils/MeshUtils';
 import { PerplexityProvider } from 'providers/PerplexityProvider';
 import { OpenRouterProvider } from './providers/OpenRouterProvider';
+import { LMStudioProvider } from './providers/LMStudioProvider';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
@@ -70,8 +71,6 @@ export default class MeshAIPlugin extends Plugin {
     this.addRibbonIcon('brain', 'Mesh AI Integration', () => {
       this.activateView();
     });
-
-    this.updateMeshViewProvider(this.settings.selectedProvider);
   }
 
   createWorkflowCommands() {
@@ -298,6 +297,8 @@ export default class MeshAIPlugin extends Plugin {
         return new OllamaProvider(this.settings.ollamaServerUrl, this);
       case 'openrouter':
         return new OpenRouterProvider(this.settings.openrouterApiKey, this);
+      case 'lmstudio':
+        return new LMStudioProvider(this.settings.lmstudioServerUrl, this);
       default:
         throw new Error(`Unknown provider: ${providerName}`);
     }
@@ -312,15 +313,6 @@ export default class MeshAIPlugin extends Plugin {
       default:
         throw new Error(`Unsupported search provider: ${providerName}`);
     }
-  }
-
-  updateMeshViewProvider(newProvider: ProviderName) {
-    const meshLeaves = this.app.workspace.getLeavesOfType(MESH_VIEW_TYPE);
-    meshLeaves.forEach((leaf) => {
-      if (leaf.view instanceof MeshView) {
-        (leaf.view as MeshView).updateProviderSelect(newProvider);
-      }
-    });
   }
 
   reloadMeshView() {

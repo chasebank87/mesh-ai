@@ -1,4 +1,4 @@
-type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama' | 'openrouter';
+type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama' | 'openrouter' | 'lmstudio';
 type SearchProviderName = 'tavily' | 'perplexity';
 
 type ProviderApiKeys = {
@@ -15,6 +15,7 @@ interface ProviderModels {
   grocq: string[];
   ollama: string[];
   openrouter: string[];
+  lmstudio: string[];
 }
 
 interface PluginSettings {
@@ -39,6 +40,8 @@ interface PluginSettings {
   enableDebugging: boolean;
   workflows: Workflow[];
   openrouterApiKey: string;
+  lmstudioApiKey: string;
+  lmstudioServerUrl: string;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
@@ -63,14 +66,17 @@ const DEFAULT_SETTINGS: PluginSettings = {
     anthropic: [],
     grocq: [],
     ollama: [],
-    openrouter: []
+    openrouter: [],
+    lmstudio: []
   },
   customPatternsFolder: '',
   fabricPatternsFolder: '',
   meshOutputFolder: '',
   patternStitchingEnabled: false,
   enableDebugging: false,
-  workflows: []
+  workflows: [],
+  lmstudioApiKey: '',
+  lmstudioServerUrl: 'http://localhost:8000'
 };
 
 interface GitHubApiItem {
