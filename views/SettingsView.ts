@@ -178,23 +178,23 @@ export class SettingsView extends PluginSettingTab {
     
     new Setting(containerEl)
       .setName('Custom patterns folder')
-      .setDesc('Enter the name of the folder containing custom patterns. If it\'s in the root of your vault, just enter the folder name (e.g., "Custom Patterns").')
+      .setDesc('Enter the path to your custom patterns folder')
       .addText(text => text
         .setPlaceholder('Custom Patterns')
         .setValue(this.plugin.settings.customPatternsFolder)
         .onChange(async (value) => {
-          this.plugin.settings.customPatternsFolder = value;
+          this.plugin.settings.customPatternsFolder = value.replace(/\\/g, '/');
           await this.plugin.saveSettings();
         }));
     
       new Setting(containerEl)
         .setName('Fabric patterns folder')
-        .setDesc('Folder where downloaded patterns will be saved')
+        .setDesc('Enter the path to the fabric patterns folder')
         .addText(text => text
-          .setPlaceholder('Enter folder path')
+          .setPlaceholder('Fabric Patterns')
           .setValue(this.plugin.settings.fabricPatternsFolder)
           .onChange(async (value) => {
-            this.plugin.settings.fabricPatternsFolder = value;
+            this.plugin.settings.fabricPatternsFolder = value.replace(/\\/g, '/');
             await this.plugin.saveSettings();
           }));
     
@@ -232,7 +232,7 @@ export class SettingsView extends PluginSettingTab {
         .setPlaceholder('Mesh Output')
         .setValue(this.plugin.settings.meshOutputFolder)
         .onChange(async (value) => {
-          this.plugin.settings.meshOutputFolder = value;
+          this.plugin.settings.meshOutputFolder = value.replace(/\\/g, '/');
           await this.plugin.saveSettings();
         }));
     
