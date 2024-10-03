@@ -19,6 +19,7 @@ interface ProviderModels {
 }
 
 interface PluginSettings {
+  [key: string]: string | boolean | ProviderModels | Workflow[];
   openaiApiKey: string;
   googleApiKey: string;
   microsoftApiKey: string;

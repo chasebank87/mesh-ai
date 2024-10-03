@@ -29,7 +29,7 @@ export default class MeshAIPlugin extends Plugin {
   perplexityProvider: PerplexityProvider;
   async onload() {
     await this.loadSettings();
-    await this.loadParticlesJS();
+    this.fixFolderPaths();
     this.youtubeProvider = new YoutubeProvider(this);
     this.tavilyProvider = new TavilyProvider(this.settings.tavilyApiKey, this);
     
@@ -322,5 +322,21 @@ export default class MeshAIPlugin extends Plugin {
         (leaf.view as MeshView).onOpen();
       }
     });
+  }
+
+  fixFolderPaths() {
+    const pathsToFix = ['customPatternsFolder', 'fabricPatternsFolder', 'meshOutputFolder'];
+    let settingsChanged = false;
+
+    for (const path of pathsToFix) {
+      if (typeof this.settings[path] === 'string' && this.settings[path].includes('\\')) {
+        this.settings[path] = (this.settings[path] as string).replace(/\\/g, '/');
+        settingsChanged = true;
+      }
+    }
+
+    if (settingsChanged) {
+      this.saveSettings();
+    }
   }
 }
