@@ -1,7 +1,7 @@
 {
   "id": "mesh-ai",
   "name": "Mesh AI",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "minAppVersion": "1.6.5",
   "description": "Mesh AI prompt manager and gererator",
   "author": "Chasebank87",
