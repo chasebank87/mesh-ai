@@ -115,9 +115,10 @@ export class SettingsView extends PluginSettingTab {
     // Add default provider setting
     new Setting(containerEl)
     .setName('Default Provider')
-    .setDesc('Select the default AI provider')
+      .setDesc('Select the default AI provider. You must reload the plugin for the change to take effect.')
+    // Use SupportedProviderName instead of ProviderName
     .addDropdown(dropdown => {
-      providers.forEach(provider => {
+      supportedProviders.forEach(provider => {
         dropdown.addOption(provider, provider.charAt(0).toUpperCase() + provider.slice(1));
       });
       dropdown.setValue(this.plugin.settings.selectedProvider);
