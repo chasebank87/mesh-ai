@@ -1064,6 +1064,10 @@ input:checked + .mesh-slider:before {
   margin-bottom: 10px;
 }
 
+.mesh-provider-container {
+  position: relative;
+}
+
 .mesh-overlay {
   position: absolute;
   top: 0;

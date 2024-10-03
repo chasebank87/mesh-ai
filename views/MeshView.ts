@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, TFolder, TextComponent, EventRef } from 'obsidian';
 import MeshAIPlugin from '../main';
-import { PluginSettings, ProviderName, SearchProviderName } from '../types';
+import { PluginSettings, ProviderName, SearchProviderName, SupportedProviderName } from '../types';
 import { YouTubeSelectionModal } from '../modals/YouTubeSelectionModal';
 import { handleLLMRequest } from '../utils/LLMUtils';
 import { searchPatterns, createSelectedPatternElement, getPatternContent, onPatternSearch, onPatternSelect, updateSelectedPatternsDisplay } from '../utils/PatternUtils';
@@ -74,14 +74,11 @@ export class MeshView extends ItemView {
     }
 
     // Provider selection card
-    const PROVIDERS: Record<ProviderName, ProviderName> = {
+    const PROVIDERS: Record<SupportedProviderName, SupportedProviderName> = {
       openai: 'openai',
-      google: 'google',
-      microsoft: 'microsoft',
-      anthropic: 'anthropic',
-      grocq: 'grocq',
       ollama: 'ollama',
       openrouter: 'openrouter',
+      grocq: 'grocq',
       lmstudio: 'lmstudio'
     };
 

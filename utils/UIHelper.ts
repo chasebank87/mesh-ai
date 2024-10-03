@@ -1,4 +1,4 @@
-import { PluginSettings, ProviderName } from '../types';
+import { PluginSettings, ProviderName, SupportedProviderName } from '../types';
 
 export class UIHelper {
   private containerEl: HTMLElement;
@@ -60,13 +60,12 @@ export class UIHelper {
     
     const select = selectContainer.createEl('select', { cls: 'mesh-ai-select', attr: { id: 'mesh-ai-provider' } });
     
-    const providers: Array<{ value: ProviderName; label: string }> = [
+    const providers: Array<{ value: SupportedProviderName; label: string }> = [
       { value: 'openai', label: 'OpenAI' },
-      { value: 'google', label: 'Google' },
-      { value: 'microsoft', label: 'Microsoft' },
-      { value: 'anthropic', label: 'Anthropic' },
       { value: 'grocq', label: 'Grocq' },
-      { value: 'ollama', label: 'Ollama' }
+      { value: 'ollama', label: 'Ollama' },
+      { value: 'openrouter', label: 'OpenRouter' },
+      { value: 'lmstudio', label: 'LMStudio' }
     ];
 
     providers.forEach(provider => {

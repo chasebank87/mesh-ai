@@ -1,6 +1,8 @@
 type ProviderName = 'openai' | 'google' | 'microsoft' | 'anthropic' | 'grocq' | 'ollama' | 'openrouter' | 'lmstudio';
 type SearchProviderName = 'tavily' | 'perplexity';
 
+type SupportedProviderName = 'openai' | 'grocq' | 'openrouter' | 'ollama' | 'lmstudio';
+
 type ProviderApiKeys = {
   [K in Exclude<ProviderName, 'ollama'>]: string;
 } & {
@@ -141,6 +143,7 @@ interface Workflow {
 // At the bottom of the file, modify your exports:
 export type {
   SearchProviderName,
+  SupportedProviderName,
   ProviderName,
   ProviderApiKeys,
   ProviderModels,

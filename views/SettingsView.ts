@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting, DropdownComponent, ButtonComponent, Notice } from 'obsidian';
-import { PluginSettings, ProviderName } from '../types';
+import { PluginSettings, ProviderName, SupportedProviderName } from '../types';
 import MeshAIPlugin from '../main';
 import { debugLog } from '../utils/MeshUtils';
 import { MeshView } from './MeshView';
@@ -18,10 +18,16 @@ export class SettingsView extends PluginSettingTab {
     containerEl.empty();
 
     const providers: ProviderName[] = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'openrouter', 'ollama', 'lmstudio'];
+    const supportedProviders: SupportedProviderName[] = ['openai', 'grocq', 'ollama', 'openrouter', 'lmstudio'];
 
     for (const provider of providers) {
       const providerContainer = containerEl.createEl('div', { cls: 'mesh-provider-container' });
       providerContainer.createEl('h3', { text: provider.charAt(0).toUpperCase() + provider.slice(1) });
+
+      if (!supportedProviders.includes(provider as SupportedProviderName)) {
+        const overlay = providerContainer.createEl('div', { cls: 'mesh-overlay' });
+        overlay.createEl('p', { text: 'Coming soon' });
+      }
 
       if (provider === 'ollama') {
         new Setting(providerContainer)
