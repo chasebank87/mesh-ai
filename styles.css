@@ -1089,3 +1089,242 @@ input:checked + .mesh-slider:before {
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 10px;
 }
+
+.mesh-pathway-widget {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.mesh-pathway-button {
+    display: flex;
+    align-items: center;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.mesh-pathway-button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+.mesh-pathway-button .lucide-brain {
+    margin-right: 4px;
+}
+
+/* AnalyzePathwaysModal specific styles */
+.mesh-analyze-pathways-modal {
+  background-color: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 25px;
+  max-width: 600px;
+  max-height: 70%;
+  width: 100%;
+  margin: auto;
+  position: relative; /* Add this to position the scroll indicator */
+  padding-bottom: 60px; /* Increase bottom padding to make room for the Create All button */
+}
+
+.mesh-analyze-pathways-modal .modal-header {
+  font-size: 1.6em;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 12px;
+}
+
+.mesh-analyze-pathways-modal .pathway-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 24px;
+  padding-right: 10px; /* Add some padding for the scrollbar */
+}
+
+.mesh-analyze-pathways-modal .pathway-item {
+  margin-bottom: 20px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.mesh-analyze-pathways-modal .pathway-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mesh-analyze-pathways-modal .pathway-backlink {
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+.mesh-analyze-pathways-modal button {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+}
+
+.mesh-analyze-pathways-modal button:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.mesh-analyze-pathways-modal .create-all-button {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 50px);
+  margin-top: 20px;
+  z-index: 2; /* Ensure the button is above the scroll indicator */
+}
+
+.mesh-analyze-pathways-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.mesh-analyze-pathways-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--background-primary);
+  border-top: 5px solid var(--interactive-accent);
+  border-radius: 50%;
+  animation: mesh-analyze-pathways-spin 1s linear infinite;
+}
+
+@keyframes mesh-analyze-pathways-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mesh-analyze-pathways-modal .potential-links-list {
+  margin-top: 12px;
+  padding-left: 16px;
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+.mesh-analyze-pathways-modal .potential-link-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mesh-analyze-pathways-modal .potential-link-text {
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.mesh-analyze-pathways-modal .delete-pathway-button,
+.mesh-analyze-pathways-modal .delete-link-button {
+  background-color: var(--text-error-bg);
+  color: var(--text-error);
+}
+
+.mesh-analyze-pathways-modal .delete-pathway-button:hover,
+.mesh-analyze-pathways-modal .delete-link-button:hover {
+  background-color: var(--text-error);
+  color: var(--background-primary);
+}
+
+.mesh-warning-message {
+  background-color: var(--text-warning-bg);
+  color: var(--text-warning);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+}
+
+.mesh-analyze-pathways-modal .potential-links-header {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  font-size: 1em;
+  color: var(--text-muted);
+}
+ 
+.mesh-analyze-pathways-modal .delete-pathway-button,
+.mesh-analyze-pathways-modal .delete-link-button {
+  background-color: var(--text-error-bg);
+  color: var(--text-error);
+  margin-left: 8px;
+}
+
+.mesh-analyze-pathways-modal .delete-pathway-button:hover,
+.mesh-analyze-pathways-modal .delete-link-button:hover {
+  background-color: var(--text-error);
+  color: var(--background-primary);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.mesh-analyze-pathways-modal .mesh-instructions {
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.mesh-analyze-pathways-modal .mesh-instructions ul {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.mesh-analyze-pathways-modal .pathway-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 24px;
+  padding-right: 10px; /* Add some padding for the scrollbar */
+}
+
+.mesh-analyze-pathways-modal .scroll-indicator {
+  position: absolute;
+  bottom: 55px; /* Move the scroll indicator up */
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s infinite;
+  color: var(--text-muted);
+  opacity: 0.7;
+  z-index: 1; /* Ensure the scroll indicator is below the button */
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  40% {
+    transform: translateY(-10px) translateX(-50%);
+  }
+  60% {
+    transform: translateY(-5px) translateX(-50%);
+  }
+}
+
+/* Hide scroll indicator when at the bottom of the list */
+.mesh-analyze-pathways-modal .pathway-list::-webkit-scrollbar-thumb:vertical:active {
+  display: none;
+}

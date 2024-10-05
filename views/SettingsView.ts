@@ -253,6 +253,53 @@ export class SettingsView extends PluginSettingTab {
         .addButton(button => button
             .setButtonText('Add')
             .onClick(() => this.addWorkflow()));
+
+    // Pathways section
+    this.containerEl.createEl('h2', { text: 'Pathways Settings' });
+
+    const pathwaysNotice = this.containerEl.createEl('div', {
+        cls: 'setting-item-description',
+        text: 'Currently, analyzing pathways is only supported using OpenRouter with either the o1-preview or o1-mini (o1-preview drastically out performs o1-mini which will result in better pathway analysis) models for their advanced reasoning capabilities. If cheaper models with similar performance are found in the future, they will be added as options. The o1 model is only for analysis of suggested pathways, creating backlinks will use the default provider and model.'
+    });
+    pathwaysNotice.style.marginBottom = '20px';
+    pathwaysNotice.style.color = 'var(--text-muted)';
+
+    new Setting(this.containerEl)
+        .setName('Pathways Model')
+        .setDesc('Select the model to use for pathway analysis')
+        .addDropdown(dropdown => dropdown
+            .addOption('o1-preview', 'o1-preview')
+            .addOption('o1-mini', 'o1-mini')
+            .setValue(this.plugin.settings.pathwaysModel)
+            .onChange(async (value) => {
+                this.plugin.settings.pathwaysModel = value as 'o1-preview' | 'o1-mini';
+                await this.plugin.saveSettings();
+            }));
+
+    new Setting(this.containerEl)
+        .setName('Pathways Output Folder')
+        .setDesc('Enter the path for the Pathways output folder')
+        .addText(text => text
+            .setPlaceholder('Pathways')
+            .setValue(this.plugin.settings.pathwaysOutputFolder)
+            .onChange(async (value) => {
+                this.plugin.settings.pathwaysOutputFolder = value;
+                await this.plugin.saveSettings();
+            }));
+
+    new Setting(this.containerEl)
+        .setName('Default Pathway Workflow')
+        .setDesc('Select the default workflow to use for pathway creation. This workflow will be used to create backlinks for each pathway.')
+        .addDropdown(dropdown => {
+            this.plugin.settings.workflows.forEach(workflow => {
+                dropdown.addOption(workflow.name, workflow.name);
+            });
+            dropdown.setValue(this.plugin.settings.defaultPathwayWorkflow || '')
+                .onChange(async (value) => {
+                    this.plugin.settings.defaultPathwayWorkflow = value;
+                    await this.plugin.saveSettings();
+                });
+        });
     
     // Add the debug enable setting
     new Setting(containerEl)
@@ -266,156 +313,156 @@ export class SettingsView extends PluginSettingTab {
             new Notice(`Debugging ${status}.`);
             await this.plugin.saveSettings();
         }));
-}
-
-displayWorkflows() {
-  this.workflowContainer.empty();
-  this.plugin.settings.workflows.forEach((workflow, index) => {
-      const workflowSetting = new Setting(this.workflowContainer)
-          .setName(`Workflow ${index + 1}`)
-          .addText(text => text
-              .setPlaceholder('Workflow name')
-              .setValue(workflow.name)
-              .onChange(async (value) => {
-                  workflow.name = value;
-                  await this.plugin.saveSettings();
-                  this.plugin.createWorkflowCommands();
-              }))
-          .addDropdown(dropdown => {
-              const providers = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama', 'openrouter'];
-              providers.forEach(provider => dropdown.addOption(provider, provider));
-              dropdown.setValue(workflow.provider)
-                  .onChange(async (value) => {
-                      workflow.provider = value as ProviderName;
-                      await this.plugin.saveSettings();
-                      this.plugin.createWorkflowCommands();
-                  });
-          })
-          .addText(text => text
-              .setPlaceholder('Pattern names (comma-separated)')
-              .setValue(workflow.patterns.join(', '))
-              .onChange(async (value) => {
-                  workflow.patterns = value.split(',').map(p => p.trim());
-                  await this.plugin.saveSettings();
-                  this.plugin.createWorkflowCommands();
-              }))
-          .addToggle(toggle => toggle
-              .setValue(workflow.usePatternStitching)
-              .setTooltip('Use pattern stitching')
-              .onChange(async (value) => {
-                  workflow.usePatternStitching = value;
-                  await this.plugin.saveSettings();
-              }))
-          .addButton(button => button
-              .setButtonText('Delete')
-              .onClick(async () => {
-                  this.plugin.settings.workflows.splice(index, 1);
-                  await this.plugin.saveSettings();
-                  this.displayWorkflows();
-                  this.plugin.createWorkflowCommands();
-              }));
-  });
-}
-
-async addWorkflow() {
-  this.plugin.settings.workflows.push({
-      name: 'New Workflow',
-      provider: 'openai',
-      patterns: [],
-      usePatternStitching: false
-  });
-  await this.plugin.saveSettings();
-  this.displayWorkflows();
-  this.plugin.createWorkflowCommands();
-}
-
-async populateModelDropdown(dropdown: DropdownComponent, provider: ProviderName, forceRefresh: boolean = false) {
-  dropdown.selectEl.disabled = true;
-  try {
-    let models: string[];
-    if (forceRefresh) {
-      models = await this.getModelsForProvider(provider);
-      // Update the settings with the new models
-      this.plugin.settings.providerModels[provider] = models;
-      await this.plugin.saveSettings();
-    } else {
-      models = this.plugin.settings.providerModels[provider] || await this.getModelsForProvider(provider);
-    }
-    
-    dropdown.selectEl.empty();
-    if (models && models.length > 0) {
-      models.forEach(model => dropdown.addOption(model, model));
-      
-      // Check if there's a previously selected model
-      const selectedModel = this.plugin.settings.providerModels[provider]?.[0];
-      
-      // If there's a selected model and it's in the list, use it. Otherwise, use the first model in the list.
-      const modelToSelect = models.includes(selectedModel) ? selectedModel : models[0];
-      
-      // Set the initial value and save it
-      dropdown.setValue(modelToSelect);
-      this.plugin.settings.providerModels[provider] = [modelToSelect];
-      await this.plugin.saveSettings();
-
-      // Add onChange event listener
-      dropdown.onChange(async (value) => {
-        this.plugin.settings.providerModels[provider] = [value];
-        await this.plugin.saveSettings();
-        debugLog(this.plugin, `Model for ${provider} set to: ${value}`);
-      });
-    } else {
-      dropdown.addOption('', 'No models available');
-      debugLog(this.plugin, `No models available for ${provider}`);
-    }
-  } catch (error) {
-    debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
-    dropdown.addOption('error', 'Error fetching models');
-  } finally {
-    dropdown.selectEl.disabled = false;
   }
-}
 
-  async getModelsForProvider(provider: ProviderName): Promise<string[]> {
+  displayWorkflows() {
+    this.workflowContainer.empty();
+    this.plugin.settings.workflows.forEach((workflow, index) => {
+        const workflowSetting = new Setting(this.workflowContainer)
+            .setName(`Workflow ${index + 1}`)
+            .addText(text => text
+                .setPlaceholder('Workflow name')
+                .setValue(workflow.name)
+                .onChange(async (value) => {
+                    workflow.name = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.createWorkflowCommands();
+                }))
+            .addDropdown(dropdown => {
+                const providers = ['openai', 'google', 'microsoft', 'anthropic', 'grocq', 'ollama', 'openrouter'];
+                providers.forEach(provider => dropdown.addOption(provider, provider));
+                dropdown.setValue(workflow.provider)
+                    .onChange(async (value) => {
+                        workflow.provider = value as ProviderName;
+                        await this.plugin.saveSettings();
+                        this.plugin.createWorkflowCommands();
+                    });
+            })
+            .addText(text => text
+                .setPlaceholder('Pattern names (comma-separated)')
+                .setValue(workflow.patterns.join(', '))
+                .onChange(async (value) => {
+                    workflow.patterns = value.split(',').map(p => p.trim());
+                    await this.plugin.saveSettings();
+                    this.plugin.createWorkflowCommands();
+                }))
+            .addToggle(toggle => toggle
+                .setValue(workflow.usePatternStitching)
+                .setTooltip('Use pattern stitching')
+                .onChange(async (value) => {
+                    workflow.usePatternStitching = value;
+                    await this.plugin.saveSettings();
+                }))
+            .addButton(button => button
+                .setButtonText('Delete')
+                .onClick(async () => {
+                    this.plugin.settings.workflows.splice(index, 1);
+                    await this.plugin.saveSettings();
+                    this.displayWorkflows();
+                    this.plugin.createWorkflowCommands();
+                }));
+    });
+  }
+
+  async addWorkflow() {
+    this.plugin.settings.workflows.push({
+        name: 'New Workflow',
+        provider: 'openai',
+        patterns: [],
+        usePatternStitching: false
+    });
+    await this.plugin.saveSettings();
+    this.displayWorkflows();
+    this.plugin.createWorkflowCommands();
+  }
+
+  async populateModelDropdown(dropdown: DropdownComponent, provider: ProviderName, forceRefresh: boolean = false) {
+    dropdown.selectEl.disabled = true;
     try {
-      const providerInstance = this.plugin.getProvider(provider);
-      if (providerInstance && 'getAvailableModels' in providerInstance) {
-        return await providerInstance.getAvailableModels();
+      let models: string[];
+      if (forceRefresh) {
+        models = await this.getModelsForProvider(provider);
+        // Update the settings with the new models
+        this.plugin.settings.providerModels[provider] = models;
+        await this.plugin.saveSettings();
+      } else {
+        models = this.plugin.settings.providerModels[provider] || await this.getModelsForProvider(provider);
+      }
+      
+      dropdown.selectEl.empty();
+      if (models && models.length > 0) {
+        models.forEach(model => dropdown.addOption(model, model));
+        
+        // Check if there's a previously selected model
+        const selectedModel = this.plugin.settings.providerModels[provider]?.[0];
+        
+        // If there's a selected model and it's in the list, use it. Otherwise, use the first model in the list.
+        const modelToSelect = models.includes(selectedModel) ? selectedModel : models[0];
+        
+        // Set the initial value and save it
+        dropdown.setValue(modelToSelect);
+        this.plugin.settings.providerModels[provider] = [modelToSelect];
+        await this.plugin.saveSettings();
+
+        // Add onChange event listener
+        dropdown.onChange(async (value) => {
+          this.plugin.settings.providerModels[provider] = [value];
+          await this.plugin.saveSettings();
+          debugLog(this.plugin, `Model for ${provider} set to: ${value}`);
+        });
+      } else {
+        dropdown.addOption('', 'No models available');
+        debugLog(this.plugin, `No models available for ${provider}`);
       }
     } catch (error) {
       debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
-    }
-    return this.plugin.settings.providerModels[provider] || [];
-  }
-
-  async testApiKey(provider: ProviderName): Promise<void> {
-    try {
-      const apiKey = provider === 'ollama' 
-        ? this.plugin.settings.ollamaServerUrl 
-        : this.plugin.settings[`${provider}ApiKey`];
-
-      if (!apiKey) {
-        new Notice(`Please enter an API key for ${provider}`);
-        return;
-      }
-
-      const providerInstance = this.plugin.getProvider(provider);
-      await providerInstance.getAvailableModels();
-      new Notice(`API key for ${provider} is valid`);
-
-      // Refresh the model dropdown
-      const modelSetting = this.containerEl.querySelector(`.mesh-provider-setting[data-provider="${provider}"] .dropdown`) as HTMLSelectElement;
-      if (modelSetting) {
-        const modelDropdown = new DropdownComponent(modelSetting);
-        await this.populateModelDropdown(modelDropdown, provider, true);
-      }
-    } catch (error) {
-      console.error(`Error testing API key for ${provider}:`, error);
-      new Notice(`Failed to validate API key for ${provider}: ${error.message}`);
+      dropdown.addOption('error', 'Error fetching models');
+    } finally {
+      dropdown.selectEl.disabled = false;
     }
   }
 
-  hide() {
-    super.hide();
-    this.plugin.reloadMeshView();
+    async getModelsForProvider(provider: ProviderName): Promise<string[]> {
+      try {
+        const providerInstance = this.plugin.getProvider(provider);
+        if (providerInstance && 'getAvailableModels' in providerInstance) {
+          return await providerInstance.getAvailableModels();
+        }
+      } catch (error) {
+        debugLog(this.plugin, `Error fetching models for ${provider}:`, error);
+      }
+      return this.plugin.settings.providerModels[provider] || [];
+    }
+
+    async testApiKey(provider: ProviderName): Promise<void> {
+      try {
+        const apiKey = provider === 'ollama' 
+          ? this.plugin.settings.ollamaServerUrl 
+          : this.plugin.settings[`${provider}ApiKey`];
+
+        if (!apiKey) {
+          new Notice(`Please enter an API key for ${provider}`);
+          return;
+        }
+
+        const providerInstance = this.plugin.getProvider(provider);
+        await providerInstance.getAvailableModels();
+        new Notice(`API key for ${provider} is valid`);
+
+        // Refresh the model dropdown
+        const modelSetting = this.containerEl.querySelector(`.mesh-provider-setting[data-provider="${provider}"] .dropdown`) as HTMLSelectElement;
+        if (modelSetting) {
+          const modelDropdown = new DropdownComponent(modelSetting);
+          await this.populateModelDropdown(modelDropdown, provider, true);
+        }
+      } catch (error) {
+        console.error(`Error testing API key for ${provider}:`, error);
+        new Notice(`Failed to validate API key for ${provider}: ${error.message}`);
+      }
+    }
+
+    hide() {
+      super.hide();
+      this.plugin.reloadMeshView();
+    }
   }
-}
