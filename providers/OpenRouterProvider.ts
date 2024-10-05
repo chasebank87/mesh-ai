@@ -2,7 +2,7 @@ import { Notice } from 'obsidian';
 import { CloudAPIHelper } from '../utils/CloudAPIHelper';
 import MeshAIPlugin from '../main';
 import { debugLog } from '../utils/MeshUtils';
-import { SYSTEM_PROMPT_TEMPLATE } from '../constants/promptTemplates';
+import { SYSTEM_PROMPT_TEMPLATE, PATHWAYS_PROMPT_TEMPLATE } from '../constants/promptTemplates';
 
 export class OpenRouterProvider {
   private apiHelper: CloudAPIHelper;
@@ -19,8 +19,10 @@ export class OpenRouterProvider {
   }
 
   async generateResponse(prompt: string, onUpdate?: (partial: string) => void): Promise<string> {
-    const openRouterModels = this.plugin.settings.providerModels.openrouter;
-    const model = openRouterModels && openRouterModels.length > 0 ? openRouterModels[0] : 'openai/gpt-3.5-turbo';
+    const isPathwaysPrompt = prompt.includes(PATHWAYS_PROMPT_TEMPLATE);
+    const model = isPathwaysPrompt 
+        ? this.plugin.settings.pathwaysModel 
+        : (this.plugin.settings.providerModels.openrouter[0] || 'openai/gpt-3.5-turbo');
 
     debugLog(this.plugin, `Using OpenRouter model: ${model}`);
 

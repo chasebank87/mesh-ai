@@ -45,6 +45,10 @@ interface PluginSettings {
   openrouterApiKey: string;
   lmstudioApiKey: string;
   lmstudioServerUrl: string;
+  pathwaysModel: 'o1-preview' | 'o1-mini';
+  pathwaysOutputFolder: string;
+  defaultPathwayWorkflow: string;
+  pathwaysSearchProvider: 'tavily' | 'perplexity';
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
@@ -79,7 +83,11 @@ const DEFAULT_SETTINGS: PluginSettings = {
   enableDebugging: false,
   workflows: [],
   lmstudioApiKey: '',
-  lmstudioServerUrl: 'http://localhost:8000'
+  lmstudioServerUrl: 'http://localhost:8000',
+  pathwaysModel: 'o1-preview',
+  pathwaysOutputFolder: '',
+  defaultPathwayWorkflow: '',
+  pathwaysSearchProvider: 'tavily',
 };
 
 interface GitHubApiItem {
