@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice, normalizePath } from 'obsidian';
+import { Plugin, WorkspaceLeaf, TFile, TFolder, requestUrl, Notice, normalizePath, MarkdownView } from 'obsidian';
 import { MeshView, MESH_VIEW_TYPE } from './views/MeshView';
 import { SettingsView } from './views/SettingsView';
 import { PluginSettings, DEFAULT_SETTINGS, ProviderName, Workflow, GitHubApiItem , SearchProviderName } from './types';
@@ -21,6 +21,7 @@ import { processPatterns, processStitchedPatterns, getInputContent } from './uti
 import { PerplexityProvider } from 'providers/PerplexityProvider';
 import { OpenRouterProvider } from './providers/OpenRouterProvider';
 import { LMStudioProvider } from './providers/LMStudioProvider';
+import { AnalyzePathwaysModal } from 'modals/AnalyzePathwaysModal';
 
 export default class MeshAIPlugin extends Plugin {
   settings: PluginSettings;
@@ -62,6 +63,20 @@ export default class MeshAIPlugin extends Plugin {
       name: 'Tavily Search',
       callback: () => {
         new TavilySearchModal(this.app, this).open();
+      }
+    });
+
+    this.addCommand({
+      id: 'analyze-pathways',
+      name: 'Analyze Pathways',
+      callback: () => {
+        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (activeView) {
+          const content = activeView.getViewData();
+          new AnalyzePathwaysModal(this.app, this, content).open();
+        } else {
+          new Notice('Please open a markdown file to analyze pathways.');
+        }
       }
     });
 
