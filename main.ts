@@ -86,6 +86,28 @@ export default class MeshAIPlugin extends Plugin {
     this.addRibbonIcon('brain', 'Mesh AI Integration', () => {
       this.activateView();
     });
+
+    // Add process selection menu item
+    this.registerEvent(
+      this.app.workspace.on('editor-menu', (menu, editor) => {
+        // Only add the menu item if there's selected text
+        if (editor.getSelection()) {
+          menu.addItem((item) => {
+            item
+              .setTitle('Mesh AI: Process Selection')
+              .setIcon('brain')
+              .onClick(async () => {
+                // Copy the selected text to clipboard
+                const selectedText = editor.getSelection();
+                await navigator.clipboard.writeText(selectedText);
+                
+                // Open the process clipboard modal
+                new ProcessClipboardModal(this.app, this).open();
+              });
+          });
+        }
+      })
+    );
   }
 
   createWorkflowCommands() {

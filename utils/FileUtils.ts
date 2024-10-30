@@ -50,8 +50,18 @@ export async function createInplaceContent(plugin: MeshAIPlugin, content: string
     }
 
     const editor = activeView.editor;
-    const cursor = editor.getCursor();
-
-    editor.replaceRange(content, cursor);
-    new Notice('Content inserted at cursor position');
+    const selection = editor.getSelection();
+    
+    // If there's selected text, replace it
+    // Otherwise, insert at cursor position
+    if (selection) {
+        const from = editor.posToOffset(editor.getCursor('from'));
+        const to = editor.posToOffset(editor.getCursor('to'));
+        editor.replaceRange(content, editor.offsetToPos(from), editor.offsetToPos(to));
+        new Notice('Content replaced selected text');
+    } else {
+        const cursor = editor.getCursor();
+        editor.replaceRange(content, cursor);
+        new Notice('Content inserted at cursor position');
+    }
 }
