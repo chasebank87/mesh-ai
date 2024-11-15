@@ -7,6 +7,7 @@
   --mesh-border: var(--background-modifier-border);
 }
 
+/* Mesh View Container */
 .mesh-view-container {
   position: relative;
   height: 100%;
