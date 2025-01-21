@@ -28,6 +28,7 @@ export class CloudAPIHelper {
       method,
       headers: this.headers,
       contentType: 'application/json',
+      throw: false
     };
 
     if (data) {
@@ -36,14 +37,22 @@ export class CloudAPIHelper {
 
     try {
       const response = await requestUrl(requestParams);
+      
+      // Check if the response status is not successful (not in 200-299 range)
+      if (response.status < 200 || response.status >= 300) {
+        debugLog(this.plugin, `HTTP error! status: ${response.status}`);
+        debugLog(this.plugin, `Response text: ${response.text}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${response.text}`);
+      }
+
       if (rawResponse) {
         return response;
       } else {
         return response.json;
       }
     } catch (error) {
-      debugLog(this.plugin, `HTTP error! status: ${error.status}`);
-      throw new Error(`HTTP error! status: ${error.status}`);
+      debugLog(this.plugin, `Request error: ${error.message}`);
+      throw error;
     }
   }
 
@@ -57,6 +66,7 @@ export class CloudAPIHelper {
         ...this.headers
       },
       body: JSON.stringify(data),
+      throw: false
     };
 
     try {
