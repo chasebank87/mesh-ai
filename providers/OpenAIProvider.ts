@@ -9,11 +9,11 @@ export class OpenAIProvider {
   private plugin: MeshAIPlugin;
 
   constructor(apiKey: string, plugin: MeshAIPlugin) {
+    this.plugin = plugin;
     this.apiHelper = new CloudAPIHelper('https://api.openai.com/v1', {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
     }, this.plugin);
-    this.plugin = plugin;
   }
 
   async generateResponse(prompt: string, onUpdate?: (partial: string) => void): Promise<string> {
@@ -73,6 +73,14 @@ export class OpenAIProvider {
   async getAvailableModels(): Promise<string[]> {
     try {
       const response = await this.apiHelper.get('/models');
+      if (!response) {
+        throw new Error('No response received from OpenAI API');
+      }
+      
+      if (response.error) {
+        throw new Error(`API Error: ${response.error.message || 'Unknown error'}`);
+      }
+
       if (response.data && Array.isArray(response.data)) {
         return response.data
           .filter((model: any) => model.id.startsWith('gpt-'))
@@ -82,6 +90,10 @@ export class OpenAIProvider {
       }
     } catch (error) {
       debugLog(this.plugin, `Error fetching OpenAI models: ${error}`);
+      if (error.response) {
+        debugLog(this.plugin, `Response status: ${error.response.status}`);
+        debugLog(this.plugin, `Response data: ${JSON.stringify(error.response.data)}`);
+      }
       throw error;
     }
   }
