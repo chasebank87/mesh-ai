@@ -27,8 +27,7 @@ export class CloudAPIHelper {
       url,
       method,
       headers: this.headers,
-      contentType: 'application/json',
-      throw: false
+      contentType: 'application/json'
     };
 
     if (data) {
