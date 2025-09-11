@@ -243,63 +243,108 @@ export default class MeshAIPlugin extends Plugin {
   }
 
   async downloadPatternsFromGitHub() {
-    const apiUrl = 'https://api.github.com/repos/danielmiessler/fabric/contents/patterns';
-    const baseRawUrl = 'https://raw.githubusercontent.com/danielmiessler/fabric/main/patterns';
-    
+    const owner = 'danielmiessler';
+    const repo = 'fabric';
+    const repoApiBase = `https://api.github.com/repos/${owner}/${repo}`;
+
     try {
       // Ensure the Fabric Patterns folder exists
       const normalizedFolderPath = normalizePath(this.settings.fabricPatternsFolder);
+      if (!normalizedFolderPath) {
+        new Notice('Please set a Fabric patterns folder in Settings before downloading.');
+        return;
+      }
+
       const fabricPatternsFolder = this.app.vault.getAbstractFileByPath(normalizedFolderPath);
       if (!(fabricPatternsFolder instanceof TFolder)) {
         await this.app.vault.createFolder(normalizedFolderPath);
       }
-  
-      // Fetch the list of folders in the patterns directory
-      const response = await requestUrl({ url: apiUrl });
-      const items = response.json as GitHubApiItem[];
-      const folders = items.filter((item) => item.type === 'dir');
-  
+
+      // Detect default branch
+      const repoResponse = await requestUrl({ url: repoApiBase });
+      const defaultBranch: string = (repoResponse.json as any)?.default_branch ?? 'main';
+
+      // Retrieve the full tree to locate pattern files robustly
+      const treeUrl = `${repoApiBase}/git/trees/${defaultBranch}?recursive=1`;
+      const treeResponse = await requestUrl({ url: treeUrl });
+      const tree = (treeResponse.json as any)?.tree as Array<{ path: string; type: string }> | undefined;
+
+      if (!Array.isArray(tree)) {
+        throw new Error('Unexpected GitHub API response: repository tree missing.');
+      }
+
+      // Candidate filenames within each pattern folder, in priority order
+      const candidateNames = ['system.md', 'prompt.md', 'pattern.md', 'README.md', 'readme.md'];
+      const candidateSet = new Set(candidateNames.map((n) => n.toLowerCase()));
+
+      // Consider both legacy and current locations
+      const validPrefixes = ['patterns/', 'data/patterns/'];
+
+      // Build best-file-per-folder map by priority
+      const folderToBest: Record<string, { path: string; priority: number } > = {};
+      for (const item of tree) {
+        if (item.type !== 'blob') continue;
+        if (!validPrefixes.some((p) => item.path.startsWith(p))) continue;
+
+        const parts = item.path.split('/');
+        if (parts.length < 3) continue;
+        const fileName = parts[parts.length - 1];
+        const folderName = parts[parts.length - 2];
+        const lower = fileName.toLowerCase();
+        if (!candidateSet.has(lower)) continue;
+        const priority = candidateNames.findIndex((n) => n.toLowerCase() === lower);
+        if (priority === -1) continue;
+
+        const existing = folderToBest[folderName];
+        if (!existing || priority < existing.priority) {
+          folderToBest[folderName] = { path: item.path, priority };
+        }
+      }
+
+      const entries = Object.entries(folderToBest);
+      if (entries.length === 0) {
+        throw new Error('No pattern files found under /patterns or /data/patterns in the Fabric repository.');
+      }
+
       let successCount = 0;
       let failCount = 0;
-  
-      for (const folder of folders) {
+
+      for (const [patternName, best] of entries) {
         try {
-          const fileName = `${folder.name}.md`;
-          const fileUrl = `${baseRawUrl}/${folder.name}/system.md`;
-          const filePath = normalizePath(`${this.settings.fabricPatternsFolder}/${fileName}`);
-  
-          // Fetch the content of the system.md file
-          const fileContent = await requestUrl({ url: fileUrl });
-          
-          // Check if the file already exists
+          const destFileName = `${patternName}.md`;
+          const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/${best.path}`;
+          const filePath = normalizePath(`${this.settings.fabricPatternsFolder}/${destFileName}`);
+
+          // Fetch the content of the chosen file (system.md or fallback)
+          const fileContent = await requestUrl({ url: rawUrl });
+
+          // Check if the destination file already exists
           const existingFile = this.app.vault.getAbstractFileByPath(filePath);
-          
+
           if (existingFile instanceof TFile) {
-            // If file exists, update its content
             await this.app.vault.modify(existingFile, fileContent.text);
-            debugLog(this, `Updated existing file: ${fileName}`);
+            debugLog(this, `Updated existing file: ${destFileName}`);
           } else {
-            // If file doesn't exist, create it
             await this.app.vault.create(filePath, fileContent.text);
-            debugLog(this, `Created new file: ${fileName}`);
+            debugLog(this, `Created new file: ${destFileName}`);
           }
-          
+
           successCount++;
         } catch (error) {
-          debugLog(this, `Error processing ${folder.name}:`, error);
+          debugLog(this, `Error processing ${best.path}:`, error);
           if (error instanceof Error) {
             debugLog(this, `Error message: ${error.message}`);
-            debugLog(this, `Error stack: ${error.stack}`);
           }
           failCount++;
         }
       }
-  
+
       new Notice(`Successfully downloaded/updated ${successCount} patterns. ${failCount} failed.`);
       await this.loadAllPatterns();
     } catch (error) {
-      debugLog(this, 'Error in downloadPatternsFromGitHub:', error);
-      new Notice(`Failed to download patterns: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      debugLog(this, 'Error in downloadPatternsFromGitHub:', message);
+      new Notice(`Failed to download patterns: ${message}`);
     }
   }
   
