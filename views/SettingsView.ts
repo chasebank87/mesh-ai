@@ -184,6 +184,17 @@ export class SettingsView extends PluginSettingTab {
       }));
     
     new Setting(containerEl)
+      .setName('YouTube yt-dlp path')
+      .setDesc('Optional: Absolute path to yt-dlp binary (Fabric method). If empty, will try system PATH.')
+      .addText(text => text
+        .setPlaceholder('/opt/homebrew/bin/yt-dlp')
+        .setValue(this.plugin.settings.youtubeYtDlpPath || '')
+        .onChange(async (value) => {
+          this.plugin.settings.youtubeYtDlpPath = value;
+          await this.plugin.saveSettings();
+        }));
+    
+    new Setting(containerEl)
       .setName('Custom patterns folder')
       .setDesc('Enter the path to your custom patterns folder')
       .addText(text => text
@@ -259,22 +270,42 @@ export class SettingsView extends PluginSettingTab {
 
     const pathwaysNotice = this.containerEl.createEl('div', {
         cls: 'setting-item-description',
-        text: 'Currently, analyzing pathways is only supported using OpenRouter with either the o1-preview or o1-mini (o1-preview drastically out performs o1-mini which will result in better pathway analysis) models for their advanced reasoning capabilities. If cheaper models with similar performance are found in the future, they will be added as options. The o1 model is only for analysis of suggested pathways, creating backlinks will use the default provider and model.'
+        text: 'Analyzing pathways is supported via OpenRouter using reasoning-capable models. Select a cost-effective reasoning model below; the app will fall back automatically if a model becomes unavailable.'
     });
     pathwaysNotice.style.marginBottom = '20px';
     pathwaysNotice.style.color = 'var(--text-muted)';
 
     new Setting(this.containerEl)
-        .setName('Pathways Model')
+        .setName('Pathways Model (OpenRouter)')
         .setDesc('Select the model to use for pathway analysis')
-        .addDropdown(dropdown => dropdown
-            .addOption('o1-preview', 'o1-preview')
-            .addOption('o1-mini', 'o1-mini')
-            .setValue(this.plugin.settings.pathwaysModel)
-            .onChange(async (value) => {
-                this.plugin.settings.pathwaysModel = value as 'o1-preview' | 'o1-mini';
+        .addDropdown(async (dropdown: DropdownComponent) => {
+            try {
+                const models = await this.getModelsForProvider('openrouter');
+                dropdown.selectEl.empty();
+                if (models && models.length > 0) {
+                    models.forEach(model => dropdown.addOption(model, model));
+                    const current = this.plugin.settings.pathwaysModel;
+                    const toSelect = current && models.includes(current) ? current : models[0];
+                    dropdown.setValue(toSelect);
+                    this.plugin.settings.pathwaysModel = toSelect;
+                    await this.plugin.saveSettings();
+                } else {
+                    dropdown.addOption('openai/gpt-4o-mini', 'openai/gpt-4o-mini');
+                    dropdown.setValue('openai/gpt-4o-mini');
+                    this.plugin.settings.pathwaysModel = 'openai/gpt-4o-mini';
+                    await this.plugin.saveSettings();
+                }
+                dropdown.onChange(async (value) => {
+                    this.plugin.settings.pathwaysModel = value;
+                    await this.plugin.saveSettings();
+                });
+            } catch (e) {
+                dropdown.addOption('openai/gpt-4o-mini', 'openai/gpt-4o-mini');
+                dropdown.setValue('openai/gpt-4o-mini');
+                this.plugin.settings.pathwaysModel = 'openai/gpt-4o-mini';
                 await this.plugin.saveSettings();
-            }));
+            }
+        });
 
     new Setting(this.containerEl)
         .setName('Pathways Output Folder')

@@ -31,6 +31,7 @@ interface PluginSettings {
   usePerplexity: boolean;
   perplexityApiKey: string;
   youtubeApiKey: string;
+  youtubeYtDlpPath: string;
   ollamaServerUrl: string;
   microsoftEndpointUrl: string;
   selectedProvider: ProviderName;
@@ -45,7 +46,7 @@ interface PluginSettings {
   openrouterApiKey: string;
   lmstudioApiKey: string;
   lmstudioServerUrl: string;
-  pathwaysModel: 'o1-preview' | 'o1-mini';
+  pathwaysModel: string;
   pathwaysOutputFolder: string;
   defaultPathwayWorkflow: string;
   pathwaysSearchProvider: 'tavily' | 'perplexity';
@@ -62,9 +63,10 @@ const DEFAULT_SETTINGS: PluginSettings = {
   usePerplexity: false,
   perplexityApiKey: '',
   youtubeApiKey: '',
+  youtubeYtDlpPath: '',
   ollamaServerUrl: 'http://localhost:11434',
   microsoftEndpointUrl: '',
-  selectedProvider: 'openai',
+  selectedProvider: 'openrouter',
   selectedModel: '',
   providerModels: {
     openai: [],
@@ -84,7 +86,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
   workflows: [],
   lmstudioApiKey: '',
   lmstudioServerUrl: 'http://localhost:8000',
-  pathwaysModel: 'o1-preview',
+  pathwaysModel: 'openai/gpt-4o-mini',
   pathwaysOutputFolder: '',
   defaultPathwayWorkflow: '',
   pathwaysSearchProvider: 'tavily',
